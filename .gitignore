@@ -1,2 +1,11 @@
 /logs
 __pycache__
+build/
+scientific_intelligent_modelling.egg-info/
+__pycache__/
+*.pyc
+.git
+outputs/
+key.txt
+model.pt
+*.pt
