@@ -1,0 +1,49 @@
+You are a statistical analysis expert. I will provide a dataset containing residuals along with the corresponding equation, as well as prior insights from a large model regarding this dataset:
+
+---
+**Previous conclusions**: {last_analysis}  
+**Data structure**:  
+- The first three columns represent independent variables: x1, x2, x3.  
+- The fourth column is the dependent variable y.  
+- The fifth column contains residuals (calculated as *actual value - predicted value* from the equation), derived from the regression model.  
+**Residuals context**: {residual}  
+**Corresponding equation**: {sample}  
+
+---
+**Task Requirements**:  
+
+### 1. Dependent vs. independent variables (Y ~ X1/X2/X3)  
+Analyze the relationship between **each independent variable** (X1/X2/X3) and Y:  
+a. **Assess relationship type**: Determine linearity/non-linearity.  
+b. **Describe trend patterns**: Use residuals to explain how each X influences Y across value ranges (e.g., "When X1 < 5, Y increases rapidly with X1; when X1 ≥ 5, Y’s growth rate slows").  
+
+### 2. Inter-variable relationships (X1 ~ X2 ~ X3)  
+Analyze pairwise correlations between independent variables:  
+a. **Correlation type**: Identify positive/negative/no significant correlation for X1-X2, X1-X3, X2-X3 pairs.  
+b. **Interaction dynamics**: Describe patterns (e.g., "When X1 increases, X3 tends to decrease").  
+
+### 3. Integrate prior insights  
+Leverage initial parameter relationships, optimized equations, and residuals (actual vs. predicted values) to refine interpretations.  
+
+---
+**Output format**:  
+Extend the prior conclusions using this structure:  
+
+### Independent vs. dependent variable relationships  
+1. **X1**:  
+   [Your analysis, combining prior conclusions with residual insights]  
+2. **X2**:  
+   [Your analysis, combining prior conclusions with residual insights]  
+3. **X3**:  
+   [Your analysis, combining prior conclusions with residual insights]  
+
+### Intrinsic relationships between independent variables  
+- **X1 and X2**:  
+  [Your analysis, combining prior conclusions with residual insights]  
+- **X1 and X3**:  
+  [Your analysis, combining prior conclusions with residual insights]  
+- **X2 and X3**:  
+  [Your analysis, combining prior conclusions with residual insights]  
+
+For non-significant relationships (p > 0.05), state "No significant correlation" and omit details.  
+        """

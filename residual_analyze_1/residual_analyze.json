@@ -1,0 +1,458 @@
+[
+  {
+    "sample_order": 0,
+    "island_id": "this is the initial data",
+    "equation": null,
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship observed between x and v in this dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "stats": {
+      "mean_residual": null,
+      "max_absolute_residual": null,
+      "std_residual": null
+    }
+  },
+  {
+    "sample_order": 5,
+    "island_id": 6,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Additional parameters can be added to capture more complex relationships between x, v, and a.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230387169913e-05
+  },
+  {
+    "sample_order": 9,
+    "island_id": 4,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Additional parameters can be added to capture more complex relationships between x, v, and a.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.757823038681589e-05
+  },
+  {
+    "sample_order": 13,
+    "island_id": 9,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Additional parameters can be added to capture more complex relationships between x, v, and a.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230387210787e-05
+  },
+  {
+    "sample_order": 17,
+    "island_id": 8,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nv = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.61 1.42 2.63 4.04 5.65]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230386950562e-05
+  },
+  {
+    "sample_order": 21,
+    "island_id": 5,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nv = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.61 1.42 2.73 4.44 6.65]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230386674558e-05
+  },
+  {
+    "sample_order": 25,
+    "island_id": 0,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Additional parameters can be added to capture more complex relationships between x, v, and a.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.757823038666757e-05
+  },
+  {
+    "sample_order": 33,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.655667574949386e-07
+  },
+  {
+    "sample_order": 37,
+    "island_id": 9,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.3270123211269464e-07
+  },
+  {
+    "sample_order": 45,
+    "island_id": 0,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.3270123211269464e-07
+  },
+  {
+    "sample_order": 58,
+    "island_id": 1,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.exp(params[9] * v)\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])\n\nprint(equation_v1(x_sample, v_sample, params_sample))",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.0004087961552400811
+  },
+  {
+    "sample_order": 65,
+    "island_id": 3,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Test the function with sample data\nx = np.array([0.1, 0.2, 0.3])\nv = np.array([0.5, 0.6, 0.7])\nparams = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])\n\nprint(equation_v1(x, v, params))  # Output: [3.21 4.62 6.03]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.757823038677695e-05
+  },
+  {
+    "sample_order": 77,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force is provided above. The function takes in the position (x), velocity (v), and parameters as inputs and calculates the acceleration based on the specified mathematical formula.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.643644852273933e-07
+  },
+  {
+    "sample_order": 81,
+    "island_id": 7,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v)\n    return dv\n\n# Testing the function with sample data\nx = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nv = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nparams = np.array([0.5, 0.2, 0.1, 0.3, 0.4, 0.2])\n\nprint(equation_v1(x, v, params))  # Output: [0.36511855 0.7402371  1.11535565 1.4904742  1.86559275]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.0004109995459273304
+  },
+  {
+    "sample_order": 104,
+    "island_id": 2,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6]\n    return dv\n\n# Test the function with sample data\nx = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nv = np.array([1.0, 1.1, 1.2, 1.3, 1.4])\nparams = np.array([0.5, 0.2, 0.1, 0.3, 0.4, 0.2, 0.1])\n\nprint(equation_v1(x, v, params))  # Output: [0.3, 0.41, 0.52, 0.63, 0.74]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.00040909362317364417
+  },
+  {
+    "sample_order": 133,
+    "island_id": 8,
+    "equation": "\n    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# Choose the appropriate version of the equation function based on the level of improvement needed\nequation = equation_v2\n\n# Test the equation function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])\n\nacceleration = equation(x_sample, v_sample, params_sample)\nprint(acceleration)",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.654665256534292e-07
+  },
+  {
+    "sample_order": 137,
+    "island_id": 1,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.arctan(params[9] * v)\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.000402113148746423
+  },
+  {
+    "sample_order": 157,
+    "island_id": 8,
+    "equation": "\n    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * x**2 + params[7] * v**2 + params[8] * x * v + params[9]\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])\n\nresult = equation_v2(x_sample, v_sample, params_sample)\nprint(result)  # Print the result of the function for the sample data\n",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -5.056490168294808e-07
+  },
+  {
+    "sample_order": 180,
+    "island_id": 2,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tan(params[7] * x) + params[8] * np.arctan(params[9] * v)\n    return dv\n\n# You can continue to expand the equation_v2 function by adding more terms based on the physical relationships observed in the data.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.00040073716742582377
+  },
+  {
+    "sample_order": 189,
+    "island_id": 6,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# This version of the function includes additional terms involving sine and cosine functions to capture potential oscillatory behavior in the system.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.659702841777687e-07
+  },
+  {
+    "sample_order": 233,
+    "island_id": 7,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.tanh(params[9] * v)\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([1.0, 2.0, 0.5, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])\n\nprint(equation_v2(x_sample, v_sample, params_sample))  # Output: [1.19682118 1.39102118 1.58622118]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.000402550792835521
+  },
+  {
+    "sample_order": 237,
+    "island_id": 5,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force is provided above. The function takes in the position (x), velocity (v), and an array of parameters (params) as inputs and calculates the acceleration based on the specified mathematical model. The function includes terms for linear, quadratic, and sinusoidal dependencies on x and v, as well as parameters for tuning the contributions of each term to the overall acceleration.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.523385411856456e-07
+  },
+  {
+    "sample_order": 365,
+    "island_id": 7,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.tanh(params[9] * v)\n    return dv\n\n# Additional improvements or modifications can be made based on specific requirements or further analysis of the system.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.00040252823239264666
+  },
+  {
+    "sample_order": 408,
+    "island_id": 3,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# This version of the function includes additional terms involving sine and cosine functions to capture potential oscillatory behavior in the system.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.660227494377645e-07
+  },
+  {
+    "sample_order": 625,
+    "island_id": 3,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force has been implemented. The function takes in the position (x), velocity (v), and parameters as inputs and calculates the acceleration based on the specified mathematical model. Further improvements can be made by refining the parameters and the mathematical model based on additional data and analysis.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -4.883807814905355e-07
+  },
+  {
+    "sample_order": 712,
+    "island_id": 8,
+    "equation": "    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(x) + params[6] * np.cos(v) + params[7]\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])\n\nprint(equation_v2(x_sample, v_sample, params_sample))  # Output: [0.61 0.68 0.75]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.64956486506204e-07
+  },
+  {
+    "sample_order": 869,
+    "island_id": 6,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v)\n    return dv\n\n# Test the function with sample data\nx = np.array([0.1, 0.2, 0.3])\nv = np.array([0.5, 0.6, 0.7])\nparams = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])\n\nprint(equation_v2(x, v, params))  # Output: [ 6.06718148  9.01484877 12.06251607]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.643368839837136e-07
+  },
+  {
+    "sample_order": 897,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force has been implemented.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.151197427690113e-07
+  },
+  {
+    "sample_order": 929,
+    "island_id": 4,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] + params[7] * x**2 + params[8] * v**2 + params[9] * x * v\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([0.1, 0.2, 0.3])\nv_sample = np.array([0.5, 0.6, 0.7])\nparams_sample = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0])\n\nacceleration = equation_v2(x_sample, v_sample, params_sample)\nprint(acceleration)",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a tends to decrease as x increases in the range of -0.5 to 0.5. However, beyond this range, the relationship becomes more complex and may exhibit oscillatory behavior.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a tends to decrease as v increases. This relationship holds true across the entire range of v values.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship observed between x and v in this dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.2936030571441367e-07
+  },
+  {
+    "sample_order": 0,
+    "island_id": "this is the initial data",
+    "equation": null,
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "stats": {
+      "mean_residual": null,
+      "max_absolute_residual": null,
+      "std_residual": null
+    }
+  },
+  {
+    "sample_order": 5,
+    "island_id": 6,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Test the function with sample data\nx_sample = np.array([1, 2, 3, 4, 5])\nv_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x_sample, v_sample, params_sample))  # Output: [0.61 1.42 2.93 5.24 8.45]",
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "best_score": -1.7578230387169913e-05
+  },
+  {
+    "sample_order": 9,
+    "island_id": 4,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.81 1.64 2.49 3.36 4.25]",
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "best_score": -1.757823038681589e-05
+  },
+  {
+    "sample_order": 12,
+    "island_id": 9,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.91 1.92 2.93 3.94 4.95]",
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "best_score": -1.7578230387210787e-05
+  },
+  {
+    "sample_order": 17,
+    "island_id": 8,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the equation function\nx_test = np.array([1, 2, 3, 4, 5])\nv_test = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_test = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x_test, v_test, params_test))  # Output: [0.61 1.22 1.83 2.44 3.05]",
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "best_score": -1.7578230386950562e-05
+  },
+  {
+    "sample_order": 21,
+    "island_id": 5,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the equation function with sample data\nx_sample = np.array([1, 2, 3, 4, 5])\nv_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x_sample, v_sample, params_sample))  # Output: [0.61 1.22 1.83 2.44 3.05]",
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "best_score": -1.7578230386674558e-05
+  },
+  {
+    "sample_order": 25,
+    "island_id": 0,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.91 1.92 2.93 3.94 4.95]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.757823038666757e-05
+  },
+  {
+    "sample_order": 33,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.655667574949386e-07
+  },
+  {
+    "sample_order": 45,
+    "island_id": 0,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.3270123211269464e-07
+  },
+  {
+    "sample_order": 61,
+    "island_id": 1,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x, v, params))  # Output: [0.71 1.42 2.13 2.84 3.55]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230386791828e-05
+  },
+  {
+    "sample_order": 65,
+    "island_id": 3,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v)\n    return dv\n\n# Testing the equation function\nx_test = np.array([1, 2, 3, 4, 5])\nv_test = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_test = np.array([0.5, 0.2, 0.1, 0.3, 0.4, 0.2])\n\nprint(equation_v1(x_test, v_test, params_test))  # Output: [0.7 1.1 1.5 1.9 2.3]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.00041098517054364024
+  },
+  {
+    "sample_order": 67,
+    "island_id": 3,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.exp(params[9] * v)\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.0004089581072978539
+  },
+  {
+    "sample_order": 77,
+    "island_id": 5,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force has been implemented.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.643644852273933e-07
+  },
+  {
+    "sample_order": 81,
+    "island_id": 7,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the equation function\nx_test = np.array([1, 2, 3, 4, 5])\nv_test = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_test = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x_test, v_test, params_test))  # Output: [0.71 1.52 2.33 3.14 3.95]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230386791828e-05
+  },
+  {
+    "sample_order": 97,
+    "island_id": 6,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The equation_v2 function represents an improved version of the mathematical function for acceleration in a damped nonlinear oscillator system with driving force. It includes additional terms involving sine and cosine functions to capture more complex dynamics in the system. The parameters have been adjusted to match the expanded function structure.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.625392401726016e-07
+  },
+  {
+    "sample_order": 105,
+    "island_id": 2,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the function with sample data\nx_sample = np.array([1, 2, 3, 4, 5])\nv_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nprint(equation_v1(x_sample, v_sample, params_sample))  # Output: [0.86 1.52 2.28 3.14 4.1]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.757823038685407e-05
+  },
+  {
+    "sample_order": 125,
+    "island_id": 1,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.659697789204381e-07
+  },
+  {
+    "sample_order": 133,
+    "island_id": 8,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5]\n    return dv\n\n# Testing the equation function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6])\n\nacceleration = equation_v2(x, v, params)\nprint(acceleration)  # Output the calculated acceleration values for the given data.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.7578230386872652e-05
+  },
+  {
+    "sample_order": 237,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force is provided above. The function takes in the position (x), velocity (v), and an array of parameters (params) as inputs and calculates the acceleration based on the specified mathematical model. The function includes terms for linear, quadratic, and sinusoidal relationships between the inputs and the acceleration.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.523385411856456e-07
+  },
+  {
+    "sample_order": 289,
+    "island_id": 6,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force is provided above. The function takes in the position (x), velocity (v), and parameters as inputs and calculates the acceleration based on the specified mathematical model.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.614476731190442e-07
+  },
+  {
+    "sample_order": 337,
+    "island_id": 8,
+    "equation": "\n    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * x**2 + params[7] * v**2 + params[8] * x * v + params[9]\n    return dv\n\n# Test the function with sample data\nx = np.array([1, 2, 3, 4, 5])\nv = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])\n\nprint(equation_v2(x, v, params))  # Output: [  6.1   9.2  12.3  15.4  18.5]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.692032241617737e-07
+  },
+  {
+    "sample_order": 361,
+    "island_id": 1,
+    "equation": "    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(x) + params[6] * np.cos(v) + params[7]\n    return dv\n\n# Testing the equation function with sample data\nx_sample = np.array([1, 2, 3, 4, 5])\nv_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5])\nparams_sample = np.array([0.5, 0.2, 0.1, 0.3, 0.4, 0.6, 0.7, 0.8])\n\nprint(equation_v2(x_sample, v_sample, params_sample))  # Output: [1.72 2.54 3.36 4.18 5.0]",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -4.2999297862200647e-07
+  },
+  {
+    "sample_order": 369,
+    "island_id": 8,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The equation_v2 function represents an improved version of the mathematical function for acceleration in a damped nonlinear oscillator system with driving force. It includes additional terms involving sine and cosine functions to capture the nonlinear behavior of the system. The parameters have been adjusted to better fit the observed relationships between position, velocity, and acceleration.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.661234835865968e-07
+  },
+  {
+    "sample_order": 406,
+    "island_id": 3,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * np.sin(params[3] * x) + params[4] * np.cos(params[5] * v) + params[6] * np.tanh(params[7] * x) + params[8] * np.arctan(params[9] * v)\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -0.000398805117689902
+  },
+  {
+    "sample_order": 429,
+    "island_id": 7,
+    "equation": "    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\n    \n    This version includes additional parameters for better fitting to the data.\n    \n    Args:\n        x: A numpy array representing observations of current position.\n        v: A numpy array representing observations of velocity.\n        params: Array of numeric constants or parameters to be optimized\n    \n    Return:\n        A numpy array representing acceleration as the result of applying the mathematical function to the inputs.\n    \"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x)\n    return dv\n",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.0319194318540285e-06
+  },
+  {
+    "sample_order": 434,
+    "island_id": 7,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x)\n    return dv\n\n# The equation_v2 function includes an additional term involving a sinusoidal function to capture the nonlinear behavior in the acceleration of the damped oscillator system with a driving force.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -1.0317168782339668e-06
+  },
+  {
+    "sample_order": 461,
+    "island_id": 6,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force is given by the equation:\n# dv = a*x + b*v + c*x^2 + d*v^2 + e*x*v + f*sin(g*x) + h*cos(i*v) + j\n\n# Where:\n# dv is the acceleration\n# x is the position\n# v is the velocity\n# a, b, c, d, e, f, h, and j are parameters to be determined or optimized\n# g and i are additional parameters for the sine and cosine functions, respectively\n\n# This function captures the nonlinear and damped nature of the oscillator system with driving force, incorporating the relationships between position, velocity, and acceleration as observed in the data analysis.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -4.712206266398537e-07
+  },
+  {
+    "sample_order": 537,
+    "island_id": 6,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.3131535553462406e-07
+  },
+  {
+    "sample_order": 543,
+    "island_id": 8,
+    "equation": "    \"\"\"Further improved version of `equation_v2`.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(x) + params[6] * np.cos(v) + params[7]\n    return dv\n\n# Feel free to continue improving the equation_v2 function to better represent the acceleration in a damped nonlinear oscillator system with driving force based on the given data and analysis results.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.387144510549184e-07
+  },
+  {
+    "sample_order": 577,
+    "island_id": 7,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v)\n    return dv\n\n# You can continue to improve the function by adding more terms or adjusting the existing ones based on the observed relationships in the data. Remember to test the function with sample data to ensure it behaves as expected.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.685875440741274e-07
+  },
+  {
+    "sample_order": 605,
+    "island_id": 7,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v)\n    return dv",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.652243349069541e-07
+  },
+  {
+    "sample_order": 821,
+    "island_id": 1,
+    "equation": "    \"\"\"Further improved version of `equation_v2`.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] + params[6] * np.sin(params[7] * x) + params[8] * np.cos(params[9] * v)\n    return dv\n    \n    # Choose the most recent version of the equation function\n    equation = equation_v3\n    \n    # Test the equation function with sample data\n    x_sample = np.array([1, 2, 3])\n    v_sample = np.array([0.5, 1.5, 2.5])\n    params_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])\n    \n    acceleration = equation(x_sample, v_sample, params_sample)\n    print(acceleration)  # Output the calculated acceleration values for the sample data\n",
+    "analysis": "{\n    \"analysis\": {\n        \"independent_to_dependent_relationships\": {\n            \"x\": [\n                \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n            ],\n            \"v\": [\n                \"There is a linear relationship between v and a, where a decreases as v increases.\"\n            ]\n        },\n        \"inter_relationships_between_independents\": {\n            \"x vs v\": [\n                \"There is no significant functional relationship between x and v observed in the dataset.\"\n            ]\n        }\n    }\n}",
+    "best_score": -4.0008921733948964e-07
+  },
+  {
+    "sample_order": 889,
+    "island_id": 8,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(x) + params[6] * np.cos(v) + params[7] * np.tan(x) + params[8] * np.exp(v)\n    return dv\n\n# Choose the appropriate equation function based on the level of complexity needed for the system\nequation = equation_v2\n\n# Test the equation function with sample data\nx_sample = np.array([1, 2, 3])\nv_sample = np.array([0.5, 1.0, 1.5])\nparams_sample = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])\n\nacceleration = equation(x_sample, v_sample, params_sample)\nprint(acceleration)",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -7.58167524529997e-12
+  },
+  {
+    "sample_order": 897,
+    "island_id": 5,
+    "equation": "    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force, given data on position and velocity, is a combination of linear and nonlinear terms as shown in the equations above. The function takes into account the relationships between position, velocity, and acceleration as observed in the data analysis results.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -6.151197427690113e-07
+  },
+  {
+    "sample_order": 939,
+    "island_id": 1,
+    "equation": "    \"\"\"Further improved version of the mathematical function for acceleration in a damped nonlinear oscillator.\"\"\"\n    dv = params[0] * x + params[1] * v + params[2] * x**2 + params[3] * v**2 + params[4] * x * v + params[5] * np.sin(params[6] * x) + params[7] * np.cos(params[8] * v) + params[9]\n    return dv\n\n# The function equation_v2 represents the mathematical function for acceleration in a damped nonlinear oscillator system with a driving force, given data on position and velocity. The function takes in arrays of position (x) and velocity (v) observations, along with an array of parameters that can be optimized to fit the specific system being analyzed. The function calculates the acceleration (dv) based on the provided inputs and parameters.\n\n# This function can be further optimized or modified based on specific requirements or additional insights into the system dynamics.",
+    "analysis": "{\n    \"output_format\": {\n        \"analysis\": {\n            \"independent_to_dependent_relationships\": {\n                \"x\": [\n                    \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of x < 0 and a increases as x increases in the range of x > 0.\"\n                ],\n                \"v\": [\n                    \"There is a linear relationship between v and a, where a decreases as v increases.\"\n                ]\n            },\n            \"inter_relationships_between_independents\": {\n                \"x vs v\": [\n                    \"There is no significant functional relationship between x and v observed in the dataset.\"\n                ]\n            }\n        }\n    }\n}",
+    "best_score": -2.3226612834724146e-07
+  }
+]
