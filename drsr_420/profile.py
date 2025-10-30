@@ -31,7 +31,8 @@ class Profiler:
         self._num_samples = 0
         self._cur_best_program_sample_order = None
         self._cur_best_program_score = -99999999
-        self._cur_best_program_str = None
+        # 避免 tensorboard 写入 text 时传入 None 导致报错
+        self._cur_best_program_str = ""
         self._evaluate_success_program_num = 0
         self._evaluate_failed_program_num = 0
         self._tot_sample_time = 0
@@ -70,10 +71,10 @@ class Profiler:
             global_step=self._num_samples
         )
         
-        # Log the function_str
+        # Log the function_str（保证传入字符串类型）
         self._writer.add_text(
             'Best Function String',
-            self._cur_best_program_str,
+            self._cur_best_program_str or "",
             global_step=self._num_samples
         )
 

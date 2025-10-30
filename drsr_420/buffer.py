@@ -229,6 +229,18 @@ class Island:
 
     def get_prompt(self) -> tuple[str, int]:
         """Constructs a prompt containing equation program skeletons from this island."""
+        # 若当前岛屿尚无任何已评估样本（如初始化评估超时），构造一个仅包含新版本头部的最小提示，避免空集 softmax 报错
+        if not self._clusters:
+            # 以模板中的原始函数为基础，生成 v0 头部（空函数体）
+            base_impl = copy.deepcopy(self._template.get_function(self._function_to_evolve))
+            base_impl.name = f"{self._function_to_evolve}_v0"
+            base_impl.docstring = (
+                f"Improved version of `{self._function_to_evolve}`.")
+            base_impl.body = ''
+            prompt = dataclasses.replace(self._template, functions=[base_impl])
+            # version_generated=1，指示下一版应为 v1
+            return str(prompt), 1
+
         signatures = list(self._clusters.keys())
         cluster_scores = np.array(
             [self._clusters[signature].score for signature in signatures])

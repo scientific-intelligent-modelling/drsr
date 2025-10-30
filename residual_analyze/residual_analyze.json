@@ -286,5 +286,27 @@
       "max_absolute_residual": null,
       "std_residual": null
     }
+  },
+  {
+    "sample_order": 0,
+    "island_id": "this is the initial data",
+    "equation": null,
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of -0.572 to 0.527. However, there is a slight increase in a as x increases in the range of -0.547 to -0.485.\"\n        ],\n        \"v\": [\n          \"There is a nonlinear relationship between v and a, where a decreases as v increases in the range of -0.171 to 0.281. However, there is a slight increase in a as v increases in the range of 0.281 to 0.281.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship observed between x and v in the dataset provided.\"\n        ]\n      }\n    }\n  }\n}",
+    "stats": {
+      "mean_residual": null,
+      "max_absolute_residual": null,
+      "std_residual": null
+    }
+  },
+  {
+    "sample_order": 0,
+    "island_id": "this is the initial data",
+    "equation": null,
+    "analysis": "{\n  \"output_format\": {\n    \"analysis\": {\n      \"independent_to_dependent_relationships\": {\n        \"x\": [\n          \"There is a nonlinear relationship between x and a, where a decreases as x increases in the range of -0.5 to 0.5, and then increases as x further increases beyond 0.5.\"\n        ],\n        \"v\": [\n          \"There is a linear relationship between v and a, where a decreases as v increases.\"\n        ]\n      },\n      \"inter_relationships_between_independents\": {\n        \"x vs v\": [\n          \"There is no significant functional relationship between x and v observed in the dataset.\"\n        ]\n      }\n    }\n  }\n}",
+    "stats": {
+      "mean_residual": null,
+      "max_absolute_residual": null,
+      "std_residual": null
+    }
   }
 ]

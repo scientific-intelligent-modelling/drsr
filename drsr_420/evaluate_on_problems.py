@@ -2,7 +2,7 @@ import numpy as np
 MAX_NPARAMS = 10
 params = [1.0]*MAX_NPARAMS
 from scipy.optimize import minimize
-from parallel_bfgs import parallel_multi_start_bfgs
+from drsr_420.parallel_bfgs import parallel_multi_start_bfgs
 
 # 全局变量定义保留小数点的位数
 DECIMAL_PLACES = 3
