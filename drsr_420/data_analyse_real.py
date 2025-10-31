@@ -6,14 +6,14 @@ from typing import Dict, Any, Optional, Union
 import requests
 import json
 import os
-import http.client
+from time import sleep
+try:
+    from scientific_intelligent_modelling.srkit.llm import ClientFactory
+except Exception:
+    ClientFactory = None
 
 Port = '5000'
 
-# API配置
-API_HOST = "api.bltcy.ai"
-API_KEY = "sk-1zejrP7CKGPUXASwGpow3vOQ1Pjl5QzeU8xCjMrOEMSbqFQd"
-API_MODEL = "gpt-3.5-turbo"
 MAX_TOKENS = 1024
 class DataAnalyzer:
     """数据分析工具，使用本地大模型分析CSV数据"""
@@ -35,6 +35,7 @@ class DataAnalyzer:
         """
         self.api_url = api_url
         self.timeout = timeout
+        self._client = None
         
         # 如果传入了自定义值，则覆盖默认值
         if decimal_places is not None:
@@ -193,36 +194,51 @@ Deliver results in the following structured format:
         Returns:
             str: 模型响应
         """
+        # 懒加载统一客户端：默认 blt/gpt-3.5-turbo（可通过环境变量在工厂内部注入密钥与基址）
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            print("==============================初次残差api已运行====================================")
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                return data['choices'][0]['message']['content']
-            else:
-                error_msg = f"API返回数据格式错误: {data}"
-                print(error_msg)
-                return error_msg
-                
+            if self._client is None:
+                if ClientFactory is not None:
+                    model = os.getenv('DRSR_DATA_ANALYZE_MODEL', 'blt/gpt-3.5-turbo')
+                    self._client = ClientFactory.from_config({'model': model})
+                else:
+                    class _FallbackClient:
+                        def __init__(self):
+                            self.kwargs = {}
+                            self.base = os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1')
+                            self.key = os.getenv('BLT_API_KEY', '')
+                            self.model = 'gpt-3.5-turbo'
+                        def chat(self, messages):
+                            url = self.base.rstrip('/') + '/chat/completions'
+                            payload = {"model": self.model, "messages": messages}
+                            payload.update(self.kwargs)
+                            headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
+                            r = requests.post(url, headers=headers, json=payload, timeout=120)
+                            r.raise_for_status()
+                            data = r.json()
+                            content = data['choices'][0]['message'].get('content', '')
+                            return {"content": content}
+                    self._client = _FallbackClient()
+            # 设置默认采样参数
+            self._client.kwargs.setdefault('max_tokens', MAX_TOKENS)
+            self._client.kwargs.setdefault('temperature', 0.6)
+            self._client.kwargs.setdefault('top_p', 0.3)
+            # 重试调用
+            for i in range(3):
+                try:
+                    res = self._client.chat([{ "role": "user", "content": prompt }])
+                    print("==============================初次残差api已运行====================================")
+                    # 打印 tokens 用量（若可用）
+                    try:
+                        tk = res.get('tokens', {}) if isinstance(res, dict) else {}
+                        if tk:
+                            print("[DRSR][DataAnalyze Tokens]", tk)
+                    except Exception:
+                        pass
+                    return res.get('content', '') or ''
+                except Exception as e:
+                    if i == 2:
+                        raise
+                    sleep(1.5 ** (i + 1))
         except Exception as e:
             error_msg = f"请求出错: {str(e)}"
             print(error_msg)

@@ -27,18 +27,19 @@ from drsr_420 import buffer
 from drsr_420 import config as config_lib
 import requests
 import json
-import http.client
 import os
 import traceback
+from time import sleep
+try:
+    from scientific_intelligent_modelling.srkit.llm import ClientFactory
+except Exception:
+    ClientFactory = None
 problem_name_in_prompt = 'a damped nonlinear oscillator system with driving force'
 dependent_name_in_prompt = 'acceleration'
 independent_name_in_prompt = 'position, and velocity'
 Port = '5000'
 
-# API配置
-API_HOST = "api.bltcy.ai"
-API_KEY = "sk-1zejrP7CKGPUXASwGpow3vOQ1Pjl5QzeU8xCjMrOEMSbqFQd"
-API_MODEL = "gpt-3.5-turbo"
+# 推理参数（可由上层配置覆盖）
 MAX_TOKENS = 1024
 class LLM(ABC):
     def __init__(self, samples_per_prompt: int) -> None:
@@ -73,8 +74,77 @@ class Sampler:
         self._database = database
         self._evaluators = evaluators
         self._llm = llm_class(samples_per_prompt)
+        # 将父 sampler 注入到 LLM，便于重用统一客户端
+        try:
+            setattr(self._llm, '_parent_sampler', self)
+        except Exception:
+            pass
         self._max_sample_nums = max_sample_nums
         self.config = config
+        self._api_client = None
+        # 统计本次运行的 API token 消耗（仅在 use_api=True 时有效）
+        self._api_token_usage = {
+            'prompt': 0,
+            'content': 0,
+            'reasoning': 0,
+            'total': 0,
+        }
+
+    def _ensure_api_client(self):
+        if self._api_client is not None:
+            return self._api_client
+        model = getattr(self.config, 'api_model', 'gpt-3.5-turbo')
+        if ClientFactory is not None:
+            # 默认使用 blt 提供商；若已带 provider 则原样
+            if '/' not in model:
+                model = f"blt/{model}"
+            self._api_client = ClientFactory.from_config({'model': model})
+        else:
+            # 兜底回退：requests 调 BLT，读环境变量
+            class _FallbackClient:
+                def __init__(self, model):
+                    self.kwargs = {}
+                    self.model = model
+                    self.base = os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1')
+                    self.key = os.getenv('BLT_API_KEY', '')
+                def chat(self, messages):
+                    url = self.base.rstrip('/') + '/chat/completions'
+                    payload = {"model": self.model, "messages": messages}
+                    payload.update(self.kwargs)
+                    headers = {"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"}
+                    r = requests.post(url, headers=headers, json=payload, timeout=120)
+                    r.raise_for_status()
+                    data = r.json()
+                    content = data['choices'][0]['message'].get('content', '')
+                    return {"content": content, "tokens": {}}
+            self._api_client = _FallbackClient(model)
+        # 注入默认生成参数
+        self._api_client.kwargs.setdefault('max_tokens', MAX_TOKENS)
+        self._api_client.kwargs.setdefault('temperature', 0.6)
+        self._api_client.kwargs.setdefault('top_p', 0.3)
+        return self._api_client
+
+    def _chat_with_retry(self, content: str, retries: int = 3, backoff: float = 1.5) -> str:
+        client = self._ensure_api_client()
+        messages = [{"role": "user", "content": content}]
+        for i in range(retries):
+            try:
+                res = client.chat(messages)
+                # 累加 token 用量（若提供）
+                tk = res.get('tokens', {}) if isinstance(res, dict) else {}
+                try:
+                    self._api_token_usage['prompt'] += int(tk.get('prompt', 0))
+                    self._api_token_usage['content'] += int(tk.get('content', 0))
+                    self._api_token_usage['reasoning'] += int(tk.get('reasoning', 0))
+                    self._api_token_usage['total'] += int(tk.get('total', 0))
+                except Exception:
+                    pass
+                return res.get('content', '') or ''
+            except Exception as e:
+                if i == retries - 1:
+                    print(f"LLM 请求失败（{retries}次）: {e}")
+                    return ''
+                sleep(backoff ** (i + 1))
 
 # python main.py --problem_name oscillator1 --spec_path ./specs/specification_oscillator1_numpy.txt --log_path ./logs/oscillator1_local
     def sample(self, **kwargs):
@@ -288,6 +358,16 @@ class Sampler:
             except Exception as e:
                 print(f"执行分析时出错: {str(e)}")
 
+            # 打印累计 tokens（若有 API 调用）
+            try:
+                if getattr(self.config, 'use_api', False) and self._api_token_usage['total'] > 0:
+                    print("[DRSR][Tokens] prompt=", self._api_token_usage['prompt'],
+                          " content=", self._api_token_usage['content'],
+                          " reasoning=", self._api_token_usage['reasoning'],
+                          " total=", self._api_token_usage['total'])
+            except Exception:
+                pass
+
     def _get_global_sample_nums(self) -> int:
         return self.__class__._global_samples_nums
 
@@ -361,35 +441,16 @@ class Sampler:
             """
             # 调用远程API分析结果
             try:
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": analysis_prompt
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    analysis_result = data['choices'][0]['message']['content']
+                # 使用统一客户端 + 重试
+                if hasattr(self, '_parent_sampler') and self._parent_sampler is not None:
+                    analysis_result = self._parent_sampler._chat_with_retry(analysis_prompt)
+                else:
+                    analysis_result = ''
+                if analysis_result:
                     print(f"分析结果：{analysis_result}")
                     analysis_results.append(analysis_result)
                 else:
-                    print(f"API返回数据格式错误: {data}")
                     analysis_results.append("分析失败")
-                    
             except Exception as e:
                 print(f"分析请求发生错误: {str(e)}")
                 analysis_results.append(f"分析请求发生错误: {str(e)}")
@@ -487,35 +548,15 @@ Deliver results in the following structured format:
         print(res_analyze)
         # 调用远程API分析结果
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": res_analyze
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                analysis_result = data['choices'][0]['message']['content']
+            if hasattr(self, '_parent_sampler') and self._parent_sampler is not None:
+                analysis_result = self._parent_sampler._chat_with_retry(res_analyze)
+            else:
+                analysis_result = ''
+            if analysis_result:
                 print(f"残差分析结果：{analysis_result}")
                 return analysis_result
             else:
-                print(f"API返回数据格式错误: {data}")
-                return f"API返回数据格式错误"
-                
+                return "API返回数据格式错误"
         except Exception as e:
             print(f"残差分析请求发生错误: {str(e)}")
             return f"分析请求发生错误: {str(e)}"
@@ -663,43 +704,19 @@ class LocalLLM(LLM):
 
 
     def _draw_samples_api(self, prompt: str, config: config_lib.Config) -> Collection[str]:
-        all_samples = []
-        prompt = '\n'.join([self._instruction_prompt, prompt])
-        
+        all_samples: list[str] = []
+        full_prompt = '\n'.join([self._instruction_prompt, prompt])
+        # 使用父 Sampler 的统一客户端 + 重试
         for _ in range(self._samples_per_prompt):
-            while True:
-                try:
-                    conn = http.client.HTTPSConnection(API_HOST)
-                    payload = json.dumps({
-                        "max_tokens": MAX_TOKENS,
-                        "model": API_MODEL,
-                        "temperature": 0.6,
-                        "top_p": 0.3,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": prompt
-                            }
-                        ]
-                    })
-                    headers = {
-                        'Authorization': f"Bearer {API_KEY}",
-                        'Content-Type': 'application/json'
-                    }
-                    conn.request("POST", "/v1/chat/completions", payload, headers)
-                    res = conn.getresponse()
-                    data = json.loads(res.read().decode("utf-8"))
-                    response = data['choices'][0]['message']['content']
-                    
-                    if self._trim:
-                        response = _extract_body(response, config)
-                    
-                    all_samples.append(response)
-                    break
-
-                except Exception:
-                    continue
-        
+            resp = ''
+            try:
+                if hasattr(self, '_parent_sampler') and self._parent_sampler is not None:
+                    resp = self._parent_sampler._chat_with_retry(full_prompt)
+            except Exception:
+                resp = ''
+            if self._trim and resp:
+                resp = _extract_body(resp, config)
+            all_samples.append(resp)
         return all_samples
     
     
@@ -881,41 +898,13 @@ class LocalLLM(LLM):
         print("========================最终输入给大模型的content========================\n")
         print(content)
 
-        try:
-            responses = []
-            for _ in range(repeat_prompt):
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": content
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    response_content = data['choices'][0]['message']['content']
-                    responses.append(response_content)
-                else:
-                    print(f"API返回数据格式错误: {data}")
-                    responses.append("")
-            
-            return responses if self._batch_inference else responses[0]
-            
-        except Exception as e:
-            print(f"API请求发生错误: {str(e)}")
-            return [""] * repeat_prompt if self._batch_inference else ""
-
-
+        responses = []
+        for _ in range(repeat_prompt):
+            resp = ''
+            try:
+                if hasattr(self, '_parent_sampler') and self._parent_sampler is not None:
+                    resp = self._parent_sampler._chat_with_retry(content)
+            except Exception:
+                resp = ''
+            responses.append(resp)
+        return responses if self._batch_inference else responses[0]
