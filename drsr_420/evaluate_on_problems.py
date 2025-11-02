@@ -25,7 +25,7 @@ def multi_start_bfgs(loss_func, n_starts=5, n_params=10):
             best_result = result
     return best_result
 
-def evaluate(data: dict , equation) -> float:
+def evaluate(data: dict , equation):
         """ 从大模型的输出program中直接获取的"""
         print('我运行了!')
 
@@ -41,11 +41,11 @@ def evaluate(data: dict , equation) -> float:
         loss_partial = lambda params: loss(params)
         result = multi_start_bfgs(loss_partial, n_params=MAX_NPARAMS)
 
-        # Return evaluation score
+        # Return evaluation score + optimized params
         optimized_params = result.x
         loss = result.fun
         if np.isnan(loss) or np.isinf(loss):
-            return None
+            return None, None, None
         else:
             # 计算并输出优化后的方程在输入数据上的预测结果
             optimized_predictions = equation(*X.T, optimized_params)
@@ -67,4 +67,4 @@ def evaluate(data: dict , equation) -> float:
             # 直接返回数据矩阵，使用X_rounded作为输入数据
             result_data = np.column_stack((X_rounded, outputs_rounded, res_rounded))
             result_data = np.round(result_data, DECIMAL_PLACES)  # 保留小数点位数
-            return -loss, result_data
+            return -loss, result_data, optimized_params

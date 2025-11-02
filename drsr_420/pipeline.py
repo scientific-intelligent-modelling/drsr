@@ -87,7 +87,7 @@ def main(
         ))
 
     initial = template.get_function(function_to_evolve).body
-    ini_score, error_msg ,res= evaluators[0].analyse(initial, island_id=None, version_generated=None, profiler=profiler)
+    ini_score, error_msg, res, _ = evaluators[0].analyse(initial, island_id=None, version_generated=None, profiler=profiler)
 
     # 创建DataAnalyzer实例
     # DataAnalyzer 也写入统一结果目录（通过 log_dir 推导 results_root）

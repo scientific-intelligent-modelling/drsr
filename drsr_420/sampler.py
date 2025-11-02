@@ -110,6 +110,7 @@ class Sampler:
             # This loop can be executed in parallel on remote evaluator machines.
             score_for_sample = []
             error_for_samlple = []
+            opt_params_for_sample = []
             quality_for_sample = []
             residual_data = None  # 用于存储每个样本的残差数据
             best_sample = None
@@ -120,7 +121,7 @@ class Sampler:
                 self._global_sample_nums_plus_one()
                 cur_global_sample_nums = self._get_global_sample_nums()
                 chosen_evaluator: evaluator.Evaluator = np.random.choice(self._evaluators)
-                score, error_msg ,residual= chosen_evaluator.analyse(
+                score, error_msg, residual, opt_params = chosen_evaluator.analyse(
                     sample,
                     prompt.island_id,
                     prompt.version_generated,
@@ -130,6 +131,7 @@ class Sampler:
                 )
                 score_for_sample.append(score)
                 error_for_samlple.append(error_msg)
+                opt_params_for_sample.append(opt_params)
                 id += 1
                 print(best_score)
                 print(score)
@@ -274,6 +276,14 @@ class Sampler:
                         "equation": sample_text,
                         "score": score_for_sample[i],
                     }
+                    # 保存训练拟合参数
+                    try:
+                        params_i = opt_params_for_sample[i]
+                        if params_i is not None:
+                            import numpy as _np
+                            experience["fitted_params"] = _np.asarray(params_i).tolist()
+                    except Exception:
+                        pass
                     
                     # 对于 None 类型，添加错误信息
                     if category == "None" and error_msg:

@@ -147,8 +147,7 @@ class LocalSandbox(Sandbox):
 
 #################################### 02版本
     def run(self, program: str, function_to_run: str, function_to_evolve: str, 
-        # 02 版本
-        inputs: Any, test_input: str, timeout_seconds: int, **kwargs) -> tuple[Any, bool, str]:
+        inputs: Any, test_input: str, timeout_seconds: int, **kwargs) -> tuple[Any, Any]:
         # 原版
         # inputs: Any, test_input: str, timeout_seconds: int, **kwargs) -> tuple[Any, bool]:
         """
@@ -170,39 +169,35 @@ class LocalSandbox(Sandbox):
         if process.is_alive():
             process.terminate()
             process.join()
-            # results = None, False
-            # 02 版本
-            results = None, None,False, 'timeout01'
+            results = None, None, False, 'timeout01', None
         else:
             results = self._get_results(result_queue)
         
         if self._verbose:
             self._print_evaluation_details(program, results, **kwargs)
-        # print(len(results)) #4
-        # 这里对results进行处理,先拆开成四份，再把grade和runs_ok放到一起
-        if results and len(results) == 4:
-            grade, res, runs_ok ,remark= results
-            results = (grade, runs_ok,remark)
-            # print(f"拆分后的grade: {grade}, res: {res}, runs_ok: {runs_ok}, remark: {remark}")
+        # 解析五元组 (score, residual_sampled, runs_ok, remark, opt_params)
+        if results and len(results) == 5:
+            grade, res, runs_ok, remark, opt_params = results
+            results = (grade, runs_ok, remark, opt_params)
         else:
             res = None
+            grade, runs_ok, remark, opt_params = None, False, 'bad_result', None
+            results = (grade, runs_ok, remark, opt_params)
             # print('*********************')
             # print(self._print_evaluation_details(program, results, **kwargs))
         # print("result:------------")
         # print(results)
 
-        return results,res
+        return results, res
 
 
     def _get_results(self, queue):
-        #临时修改为1方便查看输出
+        # 尝试一次获取队列结果
         for _ in range(1):
             if not queue.empty():
                 return queue.get_nowait()
             time.sleep(0.1)
-        # return None, False
-        # 02 版本
-        return None, False, 'timeout02'
+        return None, None, False, 'timeout02', None
 
 
     def _print_evaluation_details(self, program, results, **kwargs):
@@ -228,7 +223,7 @@ class LocalSandbox(Sandbox):
             exec(program, all_globals_namespace)
             function_to_run = all_globals_namespace[function_to_run]
             evolved_function = all_globals_namespace[function_to_evolve]
-            results, full_res = evaluate_on_problems.evaluate(dataset, evolved_function)
+            score, full_res, opt_params = evaluate_on_problems.evaluate(dataset, evolved_function)
             if full_res is not None and hasattr(full_res, "shape") and len(full_res) > 0:
                 import numpy as np
                 # 确定采样数量，最多取20个点或全部（如果数据量小于20）
@@ -238,23 +233,22 @@ class LocalSandbox(Sandbox):
                 # 对残差进行采样
                 res = full_res[indices]
                 # print(f"残差随机采样（{sample_size}个点）:", res)
-            if not isinstance(results, (int, float)):
-                result_queue.put((None, False, 'no output'))
+            if not isinstance(score, (int, float)):
+                result_queue.put((None, None, False, 'no output', None))
                 return
             
-            ########################### 是不是这里加一段‘yes’就可以了？
-            result_queue.put((results, res,True, 'yes'))
+            # 返回 (score, residual_sampled, runs_ok, remark, opt_params)
+            result_queue.put((score, res, True, 'yes', opt_params))
             
         # if raise any exception, execution is failed
         except Exception as e:
             # print(f"Execution Error: {e}")
             # result_queue.put((None, False))
 
-            # 把报错信息输出
             error_msg = f"Execution Error: {e}"
             print('eeeeeeerrrrrrrrrroooooorrrrrrrr')
             print(error_msg)
-            result_queue.put((None, False, error_msg))
+            result_queue.put((None, None, False, error_msg, None))
 
 
 
@@ -297,7 +291,7 @@ class Evaluator:
     # ) -> None:
     
     # ) -> float:
-    ) -> tuple[float, str]:
+    ) -> tuple[float, str, Any]:
         
         # tuple[Any, bool, str]
         """ Compile the hypothesis sample into a program and executes it on test inputs. """
@@ -322,6 +316,7 @@ class Evaluator:
         
         # print('len of self._inputs: ',len(self._inputs))    # len of self._inputs:  1
         # print(bbbbb)
+        opt_params = None
         for current_input in self._inputs:
             
             # test_output, runs_ok = self._sandbox.run(
@@ -329,11 +324,11 @@ class Evaluator:
 
             # 02 版本 收集错误信息
             # test_output, runs_ok, error_msg = self._sandbox.run(
-            results, res= self._sandbox.run(
+            results, res = self._sandbox.run(
                 program, self._function_to_run, self._function_to_evolve, self._inputs, current_input,
                 self._timeout_seconds
             )
-            test_output, runs_ok, error_msg = results
+            test_output, runs_ok, error_msg, opt_params = results
             if runs_ok and not _calls_ancestor(program, self._function_to_evolve) and test_output is not None:
                 if not isinstance(test_output, (int, float)):
                     print(f'Error: test_output is {test_output}')
@@ -378,4 +373,4 @@ class Evaluator:
                 profiler.register_function(new_function)
         
         
-        return test_output, error_msg, res
+        return test_output, error_msg, res, opt_params
