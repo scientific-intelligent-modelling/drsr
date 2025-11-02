@@ -92,7 +92,7 @@ def main(
     # 创建DataAnalyzer实例
     # DataAnalyzer 也写入统一结果目录（通过 log_dir 推导 results_root）
     results_root = os.path.abspath(os.path.join(log_dir, os.pardir)) if log_dir else None
-    analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root)  # 可以自定义参数
+    analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root, api_model=config.api_model)  # 统一使用 llm 客户端
 
     # 分析指定的CSV文件
     result = analyzer.analyze(

@@ -27,18 +27,22 @@ from drsr_420 import buffer
 from drsr_420 import config as config_lib
 import requests
 import json
-import http.client
+# http.client 不再使用，调用统一的 llm.ClientFactory
 import os
 import traceback
+from typing import Any
+
+SHARED_LLM_CLIENT: Any = None
+
+def set_shared_llm_client(client):
+    global SHARED_LLM_CLIENT
+    SHARED_LLM_CLIENT = client
 problem_name_in_prompt = 'a damped nonlinear oscillator system with driving force'
 dependent_name_in_prompt = 'acceleration'
 independent_name_in_prompt = 'position, and velocity'
 Port = '5000'
 
-# API配置
-API_HOST = "api.bltcy.ai"
-API_KEY = "sk-1zejrP7CKGPUXASwGpow3vOQ1Pjl5QzeU8xCjMrOEMSbqFQd"
-API_MODEL = "gpt-3.5-turbo"
+# 采样与分析时的最大输出 token；模型名需由外部 config 显式提供
 MAX_TOKENS = 1024
 class LLM(ABC):
     def __init__(self, samples_per_prompt: int) -> None:
@@ -361,35 +365,16 @@ class Sampler:
             """
             # 调用远程API分析结果
             try:
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": analysis_prompt
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    analysis_result = data['choices'][0]['message']['content']
-                    print(f"分析结果：{analysis_result}")
-                    analysis_results.append(analysis_result)
-                else:
-                    print(f"API返回数据格式错误: {data}")
-                    analysis_results.append("分析失败")
-                    
+                client = SHARED_LLM_CLIENT
+                if client is None:
+                    raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
+                client.kwargs['max_tokens'] = MAX_TOKENS
+                client.kwargs['temperature'] = 0.6
+                client.kwargs['top_p'] = 0.3
+                resp = client.chat([{"role": "user", "content": analysis_prompt}])
+                analysis_result = resp.get('content', '') or ''
+                print(f"分析结果：{analysis_result}")
+                analysis_results.append(analysis_result or "分析为空")
             except Exception as e:
                 print(f"分析请求发生错误: {str(e)}")
                 analysis_results.append(f"分析请求发生错误: {str(e)}")
@@ -487,35 +472,16 @@ Deliver results in the following structured format:
         print(res_analyze)
         # 调用远程API分析结果
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": res_analyze
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                analysis_result = data['choices'][0]['message']['content']
-                print(f"残差分析结果：{analysis_result}")
-                return analysis_result
-            else:
-                print(f"API返回数据格式错误: {data}")
-                return f"API返回数据格式错误"
-                
+            client = SHARED_LLM_CLIENT
+            if client is None:
+                raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
+            client.kwargs['max_tokens'] = MAX_TOKENS
+            client.kwargs['temperature'] = 0.6
+            client.kwargs['top_p'] = 0.3
+            resp = client.chat([{"role": "user", "content": res_analyze}])
+            analysis_result = resp.get('content', '') or ''
+            print(f"残差分析结果：{analysis_result}")
+            return analysis_result
         except Exception as e:
             print(f"残差分析请求发生错误: {str(e)}")
             return f"分析请求发生错误: {str(e)}"
@@ -603,6 +569,8 @@ class LocalLLM(LLM):
             self._base_dir = config.results_root or "."
         except Exception:
             self._base_dir = "."
+        # 绑定共享 client
+        self._client = SHARED_LLM_CLIENT
 
         if config.use_api:
             return self._draw_samples_api(prompt, config)
@@ -670,42 +638,29 @@ class LocalLLM(LLM):
 
     def _draw_samples_api(self, prompt: str, config: config_lib.Config) -> Collection[str]:
         all_samples = []
-        prompt = '\n'.join([self._instruction_prompt, prompt])
-        
+        full_prompt = '\n'.join([self._instruction_prompt, prompt])
+        client = getattr(self, '_client', None)
+        if client is None:
+            print("未注入共享 LLM 客户端，无法进行采样。请在 Wrapper 中通过 set_shared_llm_client 注入。")
+            return [""] * self._samples_per_prompt
+        client.kwargs['max_tokens'] = MAX_TOKENS
+        client.kwargs['temperature'] = 0.6
+        client.kwargs['top_p'] = 0.3
+
         for _ in range(self._samples_per_prompt):
             while True:
                 try:
-                    conn = http.client.HTTPSConnection(API_HOST)
-                    payload = json.dumps({
-                        "max_tokens": MAX_TOKENS,
-                        "model": API_MODEL,
-                        "temperature": 0.6,
-                        "top_p": 0.3,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": prompt
-                            }
-                        ]
-                    })
-                    headers = {
-                        'Authorization': f"Bearer {API_KEY}",
-                        'Content-Type': 'application/json'
-                    }
-                    conn.request("POST", "/v1/chat/completions", payload, headers)
-                    res = conn.getresponse()
-                    data = json.loads(res.read().decode("utf-8"))
-                    response = data['choices'][0]['message']['content']
-                    
+                    resp = client.chat([{ "role": "user", "content": full_prompt }])
+                    content = resp.get('content', '') or ''
                     if self._trim:
-                        response = _extract_body(response, config)
-                    
-                    all_samples.append(response)
+                        content = _extract_body(content, config)
+                    all_samples.append(content)
                     break
-
-                except Exception:
+                except Exception as e:
+                    print(f"API请求发生错误: {str(e)}")
+                    import time as _t
+                    _t.sleep(1)
                     continue
-        
         return all_samples
     
     
@@ -887,39 +842,21 @@ class LocalLLM(LLM):
         print("========================最终输入给大模型的content========================\n")
         print(content)
 
-        try:
-            responses = []
-            for _ in range(repeat_prompt):
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": content
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    response_content = data['choices'][0]['message']['content']
-                    responses.append(response_content)
-                else:
-                    print(f"API返回数据格式错误: {data}")
-                    responses.append("")
-            
-            return responses if self._batch_inference else responses[0]
-            
-        except Exception as e:
-            print(f"API请求发生错误: {str(e)}")
+        responses = []
+        client = SHARED_LLM_CLIENT
+        if client is None:
+            print("未注入共享 LLM 客户端，无法进行请求。请在 Wrapper 中通过 set_shared_llm_client 注入。")
             return [""] * repeat_prompt if self._batch_inference else ""
+        client.kwargs['max_tokens'] = MAX_TOKENS
+        client.kwargs['temperature'] = 0.6
+        client.kwargs['top_p'] = 0.3
+
+        for _ in range(repeat_prompt):
+            try:
+                resp = client.chat([{ "role": "user", "content": content }])
+                responses.append(resp.get('content', '') or '')
+            except Exception as e:
+                print(f"API请求发生错误: {str(e)}")
+                responses.append("")
+
+        return responses if self._batch_inference else responses[0]

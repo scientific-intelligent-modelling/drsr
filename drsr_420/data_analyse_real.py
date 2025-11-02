@@ -3,17 +3,17 @@ import numpy as np
 import pandas as pd
 import io
 from typing import Dict, Any, Optional, Union
-import requests
 import json
 import os
-import http.client
+
+# 统一 LLM 客户端
+SHARED_LLM_CLIENT = None
+
+def set_shared_llm_client(client):
+    global SHARED_LLM_CLIENT
+    SHARED_LLM_CLIENT = client
 
 Port = '5000'
-
-# API配置
-API_HOST = "api.bltcy.ai"
-API_KEY = "sk-1zejrP7CKGPUXASwGpow3vOQ1Pjl5QzeU8xCjMrOEMSbqFQd"
-API_MODEL = "gpt-3.5-turbo"
 MAX_TOKENS = 1024
 class DataAnalyzer:
     """数据分析工具，使用本地大模型分析CSV数据"""
@@ -23,7 +23,10 @@ class DataAnalyzer:
     SAMPLE_SIZE = 100   # 默认随机采样100条数据
     
     def __init__(self, api_url: str = f"http://127.0.0.1:{Port}/completions", timeout: int = 300,
-                 decimal_places: int = None, sample_size: int = None, base_dir: str | None = None):
+                 decimal_places: int = None, sample_size: int = None, base_dir: str | None = None,
+                 api_model: Optional[str] = None, api_key: Optional[str] = None,
+                 api_base: Optional[str] = None, temperature: Optional[float] = None,
+                 api_params: Optional[Dict[str, Any]] = None):
         """
         初始化数据分析器
         
@@ -36,6 +39,16 @@ class DataAnalyzer:
         self.api_url = api_url
         self.timeout = timeout
         self.base_dir = base_dir or "."
+        # API 上下文（主要用于传参/日志；实际调用复用共享 client）
+        self._api_ctx = {
+            'api_model': api_model,  # 必须由调用方传入（pipeline 已透传 config.api_model）
+            'api_key': api_key,
+            'api_base': api_base,
+            'temperature': temperature,
+            'api_params': api_params if isinstance(api_params, dict) else None,
+        }
+        # 绑定共享 client
+        self._client = SHARED_LLM_CLIENT
         
         # 如果传入了自定义值，则覆盖默认值
         if decimal_places is not None:
@@ -195,35 +208,18 @@ Deliver results in the following structured format:
             str: 模型响应
         """
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            print("==============================初次残差api已运行====================================")
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                return data['choices'][0]['message']['content']
-            else:
-                error_msg = f"API返回数据格式错误: {data}"
-                print(error_msg)
-                return error_msg
-                
+            client = self._client
+            if client is None:
+                raise ValueError("未注入共享 LLM 客户端；请在 Wrapper 中注入后再运行 DataAnalyzer")
+            # 透传生成参数
+            client.kwargs['max_tokens'] = MAX_TOKENS
+            if self._api_ctx.get('temperature') is not None:
+                client.kwargs['temperature'] = self._api_ctx['temperature']
+            if isinstance(self._api_ctx.get('api_params'), dict):
+                client.kwargs.update(self._api_ctx['api_params'])
+
+            resp = client.chat([{"role": "user", "content": prompt}])
+            return resp.get('content', '') or ''
         except Exception as e:
             error_msg = f"请求出错: {str(e)}"
             print(error_msg)
