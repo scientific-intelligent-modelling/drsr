@@ -43,7 +43,6 @@ independent_name_in_prompt = 'position, and velocity'
 Port = '5000'
 
 # 采样与分析时的最大输出 token；模型名需由外部 config 显式提供
-MAX_TOKENS = 1024
 class LLM(ABC):
     def __init__(self, samples_per_prompt: int) -> None:
         self._samples_per_prompt = samples_per_prompt
@@ -378,9 +377,6 @@ class Sampler:
                 client = SHARED_LLM_CLIENT
                 if client is None:
                     raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
-                client.kwargs['max_tokens'] = MAX_TOKENS
-                client.kwargs['temperature'] = 0.6
-                client.kwargs['top_p'] = 0.3
                 resp = client.chat([{"role": "user", "content": analysis_prompt}])
                 analysis_result = resp.get('content', '') or ''
                 print(f"分析结果：{analysis_result}")
@@ -485,9 +481,6 @@ Deliver results in the following structured format:
             client = SHARED_LLM_CLIENT
             if client is None:
                 raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
-            client.kwargs['max_tokens'] = MAX_TOKENS
-            client.kwargs['temperature'] = 0.6
-            client.kwargs['top_p'] = 0.3
             resp = client.chat([{"role": "user", "content": res_analyze}])
             analysis_result = resp.get('content', '') or ''
             print(f"残差分析结果：{analysis_result}")
@@ -653,9 +646,6 @@ class LocalLLM(LLM):
         if client is None:
             print("未注入共享 LLM 客户端，无法进行采样。请在 Wrapper 中通过 set_shared_llm_client 注入。")
             return [""] * self._samples_per_prompt
-        client.kwargs['max_tokens'] = MAX_TOKENS
-        client.kwargs['temperature'] = 0.6
-        client.kwargs['top_p'] = 0.3
 
         for _ in range(self._samples_per_prompt):
             while True:
@@ -857,9 +847,6 @@ class LocalLLM(LLM):
         if client is None:
             print("未注入共享 LLM 客户端，无法进行请求。请在 Wrapper 中通过 set_shared_llm_client 注入。")
             return [""] * repeat_prompt if self._batch_inference else ""
-        client.kwargs['max_tokens'] = MAX_TOKENS
-        client.kwargs['temperature'] = 0.6
-        client.kwargs['top_p'] = 0.3
 
         for _ in range(repeat_prompt):
             try:
