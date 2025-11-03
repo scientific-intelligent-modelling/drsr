@@ -79,7 +79,8 @@ class DataAnalyzer:
             # 如果数据行数超过采样数量，则进行随机采样
             if len(df) > self.__class__.SAMPLE_SIZE and self.__class__.SAMPLE_SIZE > 0:
                 df = df.sample(n=self.__class__.SAMPLE_SIZE, random_state=42)  # 使用固定随机种子以保持结果可复现
-                print(f"已从{csv_file_path}随机采样{self.__class__.SAMPLE_SIZE}行数据")
+                # 静默化：不显示采样信息
+                   # print(f"已从{csv_file_path}随机采样{self.__class__.SAMPLE_SIZE}行数据")
             
             # 转换为字符串
             buffer = io.StringIO()
@@ -87,7 +88,8 @@ class DataAnalyzer:
             return buffer.getvalue()
             
         except Exception as e:
-            print(f"读取CSV文件出错: {e}")
+            # 静默化：简化错误输出
+                 # print(f"读取CSV文件出错: {e}")
             return ""
         
     def _read_dataset_and_to_array(self, dataset: dict, max_rows: Optional[int] = None) -> np.ndarray:
@@ -126,7 +128,8 @@ class DataAnalyzer:
                 # 随机选择行索引
                 indices = np.random.choice(rows_count, self.__class__.SAMPLE_SIZE, replace=False)
                 combined_data = combined_data[indices]
-                print(f"已从数据集随机采样{self.__class__.SAMPLE_SIZE}行数据")
+                # 静默化：不显示采样信息
+                          # print(f"已从数据集随机采样{self.__class__.SAMPLE_SIZE}行数据")
             
             # 保留指定位数的小数
             combined_data = np.round(combined_data, self.__class__.DECIMAL_PLACES)
@@ -134,7 +137,8 @@ class DataAnalyzer:
             return combined_data
             
         except Exception as e:
-            print(f"转换数据字典出错: {e}")
+            # 静默化：简化错误输出
+                            # print(f"转换数据字典出错: {e}")
             return np.array([])
     
     def _create_prompt(self, csv_data: str, custom_prompt: Optional[str] = None) -> str:
@@ -222,7 +226,8 @@ Deliver results in the following structured format:
             return resp.get('content', '') or ''
         except Exception as e:
             error_msg = f"请求出错: {str(e)}"
-            print(error_msg)
+            # 静默化：简化错误输出
+           # print(error_msg)
             return error_msg
 
     def analyze(self, 
@@ -243,11 +248,12 @@ Deliver results in the following structured format:
         Returns:
             str: 大模型分析结果
         """
-        if verbose:
-            if isinstance(data_source, str):
-                print(f"正在分析CSV文件数据: {data_source}")
-            else:
-                print("正在分析数据字典")
+        # 静默化：不显示分析开始信息
+               # if verbose:
+               #     if isinstance(data_source, str):
+               #         print(f"正在分析CSV文件数据: {data_source}")
+               #     else:
+               #         print("正在分析数据字典")
         
         # 根据数据源类型读取数据
         if isinstance(data_source, str):
@@ -258,7 +264,8 @@ Deliver results in the following structured format:
         else:
             # 处理数据字典
             array_data = self._read_dataset_and_to_array(data_source, max_rows)
-            print('====================================是字典=============================')
+            # 静默化：不显示数据类型标记
+                    # print('====================================是字典=============================')
             if array_data.size == 0:
                 return "无法处理数据字典"
             
@@ -278,21 +285,25 @@ Deliver results in the following structured format:
         if verbose:
             if isinstance(data_content, str):
                 data_size = len(data_content)
+                # 静默化：不显示数据大小信息
                 print(f"数据大小: {data_size} 字符")
             else:
+                # 静默化：不显示数据形状信息
                 print(f"数据形状: {array_data.shape}")
         
         # 创建提示
         prompt = self._create_prompt(data_content, custom_prompt)
         
-        if verbose:
-            print("正在查询大模型...")
+        # if verbose:
+            # 静默化：不显示查询状态
+                   # print("正在查询大模型...")
         
         # 获取分析结果
         result = self._query_model(prompt)
         
         if verbose:
-            print("分析完成")
+            # 静默化：不显示分析完成信息
+                   # print("分析完成")
             residual_analyze_dir = os.path.join(self.base_dir, "residual_analyze")
             if not os.path.exists(residual_analyze_dir):
                 os.makedirs(residual_analyze_dir)
@@ -307,8 +318,10 @@ Deliver results in the following structured format:
                         if isinstance(existing_data, list):
                             data_list = existing_data
                 except json.JSONDecodeError:
+                    # 静默化：不显示文件格式错误信息
                     print(f"现有的初次分析JSON文件格式有误，将创建新文件")
                 except Exception as e:
+                    # 静默化：简化错误输出
                     print(f"读取现有初次分析文件时出错: {e}")
             
             # 创建新的初次分析记录
@@ -335,8 +348,10 @@ Deliver results in the following structured format:
             try:
                 with open(json_residual_file, "w", encoding="utf-8") as f:
                     json.dump(data_list, f, ensure_ascii=False, indent=2)
-                print(f"成功更新初次分析JSON文件: {json_residual_file}")
+                # 静默化：不显示文件操作成功信息
+                                   # print(f"成功更新初次分析JSON文件: {json_residual_file}")
             except Exception as e:
+                # 静默化：简化错误输出
                 print(f"保存初次分析JSON文件时出错: {e}")
         
         return result

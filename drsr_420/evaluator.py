@@ -201,10 +201,12 @@ class LocalSandbox(Sandbox):
 
 
     def _print_evaluation_details(self, program, results, **kwargs):
-        print('================= Evaluated Program =================')
-        function = code_manipulation.text_to_program(program).get_function(kwargs.get('func_to_evolve', 'equation'))
-        print(f'{str(function).strip()}\n-----------------------------------------------------')
-        print(f'Score: {results}\n=====================================================\n\n')
+        pass
+        # 静默化：不显示评估程序详情
+        # print('================= Evaluated Program =================')
+        # function = code_manipulation.text_to_program(program).get_function(kwargs.get('func_to_evolve', 'equation'))
+        # print(f'{str(function).strip()}\n-----------------------------------------------------')
+        # print(f'Score: {results}\n=====================================================\n\n')
 
 
 
@@ -246,7 +248,8 @@ class LocalSandbox(Sandbox):
             # result_queue.put((None, False))
 
             error_msg = f"Execution Error: {e}"
-            print('eeeeeeerrrrrrrrrroooooorrrrrrrr')
+            # 静默化：不显示错误调试信息
+                       # print('eeeeeeerrrrrrrrrroooooorrrrrrrr')
             print(error_msg)
             result_queue.put((None, None, False, error_msg, None))
 

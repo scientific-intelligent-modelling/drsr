@@ -110,14 +110,18 @@ class Profiler:
         evaluate_time = function.evaluate_time
         score = function.score
         # log attributes of the function
-        print(f'================= Evaluated Function =================')
-        print(f'{function_str}')
-        print(f'------------------------------------------------------')
-        print(f'Score        : {str(score)}')
-        print(f'Sample time  : {str(sample_time)}')
-        print(f'Evaluate time: {str(evaluate_time)}')
-        print(f'Sample orders: {str(sample_orders)}')
-        print(f'======================================================\n\n')
+        # 静默化：只显示关键评估信息，格式简化
+        if score is not None:
+                # 提取方程的主要部分（避免显示过长的函数体）
+                equation_lines = function_str.split('\n')
+                main_equation = ""
+                for line in equation_lines:
+                        if 'dv =' in line or 'return dv' in line:
+                                main_equation += line.strip() + "; "
+                if not main_equation:
+                        main_equation = equation_lines[0][:100] + "..." if len(equation_lines[0]) > 100 else equation_lines[0]
+
+                print(f'评估结果: Score={score:.6f}, Equation={main_equation[:150]}{"..." if len(main_equation) > 150 else ""}')
 
         # update best function in curve
         if function.score is not None and score > self._cur_best_program_score:

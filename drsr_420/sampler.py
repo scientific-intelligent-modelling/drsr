@@ -92,20 +92,23 @@ class Sampler:
             island_id = prompt.island_id
 
             best_score = self._database._best_score_per_island[island_id]
-            print(f"从岛屿 {island_id} 获取prompt，最佳分数: {best_score}")
+            # 静默化：不显示每个岛屿的prompt获取信息
+            # print(f"从岛屿 {island_id} 获取prompt，最佳分数: {best_score}")
 
             reset_time = time.time()
 
-            print("调用大模型处理")
+            # 静默化：不显示LLM调用信息
+            # print("调用大模型处理")
 
             # 01 版本
             # samples, sed_rep = self._llm.draw_samples(prompt.code,self.config) # 向大模型采样出一个方程框架 - 核心
             samples = self._llm.draw_samples(prompt.code,self.config) # 向大模型采样出一个方程框架 - 核心
-            
+  
             sample_time = (time.time() - reset_time) / self._samples_per_prompt
 
-            print("获得了samples，在95行")
-            print(samples)
+            # 静默化：不显示采样结果
+            # print("获得了samples，在95行")
+            # print(samples)
             # This loop can be executed in parallel on remote evaluator machines.
             score_for_sample = []
             error_for_samlple = []
@@ -132,10 +135,11 @@ class Sampler:
                 error_for_samlple.append(error_msg)
                 opt_params_for_sample.append(opt_params)
                 id += 1
-                print(best_score)
-                print(score)
-                print('===================从chosen_evaluator.analyse中获得残差=====================\n')
-                print(residual)
+                # 静默化：不显示每个样本的评估细节
+                # print(best_score)
+                # print(score)
+                # print('===================从chosen_evaluator.analyse中获得残差=====================\n')
+                # print(residual)
                 if score is not None and score > best_score:
                 # if score is not None :#先为了调试，都搞一遍，上面的才是需要的
                     temp_best_score.append(score)
@@ -143,18 +147,23 @@ class Sampler:
                     if score >= max(temp_best_score):
                         best_id = id
                         if_best = True
-                        print("我在这里变成true了")
+                        # 静默化：不显示调试信息
+                        # print("我在这里变成true了")
                         residual_data=residual
                         best_sample = sample
                         best_score_for_sample = score
+
+                        # 添加最优值更新通知
+                        self._notify_new_best_score(island_id, score, sample)
             # print("一共有多少个sample？",i)
-                    
-            print("score_for_sample: ")
-            print(score_for_sample)
-            print("===========error_for_samlple:============================\n ")
-            print(error_for_samlple)
-            print("=========================residual_data: ================\n")
-            print(residual_data)
+           
+            # 静默化：不显示详细的样本数据
+            # print("score_for_sample: ")
+            # print(score_for_sample)
+            # print("===========error_for_samlple:============================\n ")
+            # print(error_for_samlple)
+            # print("=========================residual_data: ================\n")
+            # print(residual_data)
             for each_score in score_for_sample:
                 if each_score == None:
                     quality_for_sample.append('None')
@@ -162,27 +171,31 @@ class Sampler:
                     quality_for_sample.append('Good')
                 else:
                     quality_for_sample.append('Bad')
-            print("quality_for_sample:")
-            print('================================检查一下if_best的值====================\n')
-            print(if_best)
+            # 静默化：不显示质量检查详情
+            # print("quality_for_sample:")
+            # print('================================检查一下if_best的值====================\n')
+            # print(if_best)
             # 调用分析函数进行分析
             try:
                 #先直接进入第三次
-                print("\n===== 方程和分数分析开始 =====")
+                # 静默化：不显示分析过程详情
+                # print("\n===== 方程和分数分析开始 =====")
                 analysis_result = self.analyze_equations_with_scores(samples, quality_for_sample, error_for_samlple, prompt)
-                print("总的分析结果：---------")
-                print(analysis_result)
-                print("===== 方程和分数分析结束 =====\n")
-                
+                # print("总的分析结果：---------")
+                # print(analysis_result)
+                # print("===== 方程和分数分析结束 =====\n")
+
                 # 添加第三次对话：残差分析
-                print("\n===== 残差分析开始 =====")
-                print(residual_data)
-                print(if_best)
+                # 静默化：不显示残差分析详情
+                # print("\n===== 残差分析开始 =====")
+                # print(residual_data)
+                # print(if_best)
                 if residual_data is not None and if_best:
                     # 只对有效样本进行残差分析
                     if_best = False
                     residual_result = self.analyze_equations_with_residual(best_sample,residual_data)
-                    print(f"样本残差分析结果: {residual_result}")
+                    # 静默化：不显示残差分析结果
+                    # print(f"样本残差分析结果: {residual_result}")
                     # 创建目录存放残差分析结果
                     residual_analyze_dir = os.path.join(self.config.results_root or ".", "residual_analyze")
                     if not os.path.exists(residual_analyze_dir):
@@ -199,8 +212,10 @@ class Sampler:
                                 if isinstance(existing_data, list):
                                     residual_data_list = existing_data
                         except json.JSONDecodeError:
-                            print(f"现有的残差分析JSON文件格式有误，将创建新文件")
+                            # 静默化：不显示文件格式错误信息
+                           print(f"现有的残差分析JSON文件格式有误，将创建新文件")
                         except Exception as e:
+                            # 静默化：简化错误输出
                             print(f"读取现有残差分析文件时出错: {e}")
                     
                     # 创建新的残差分析记录
@@ -220,16 +235,20 @@ class Sampler:
                     
                     # 添加到残差分析数据列表
                     residual_data_list.append(residual_record)
-                    
+  
                     # 保存更新后的残差分析数据
                     try:
                         with open(json_residual_file, "w", encoding="utf-8") as f:
                             json.dump(residual_data_list, f, ensure_ascii=False, indent=2)
-                        print(f"成功更新残差分析JSON文件: {json_residual_file}")
+                        # 静默化：不显示文件操作成功信息
+                        # print(f"成功更新残差分析JSON文件: {json_residual_file}")
                     except Exception as e:
-                        print(f"保存残差分析JSON文件时出错: {e}")
-                
-                print("===== 残差分析结束 =====\n")
+                        # 保留错误信息，但简化输出
+                        # print(f"保存残差分析JSON文件时出错: {e}")
+                        pass
+
+                # 静默化：不显示分析结束标记
+                # print("===== 残差分析结束 =====\n")
 
                 # 创建目录存放分析结果
                 # import os
@@ -249,8 +268,10 @@ class Sampler:
                                 if key in existing_data:
                                     experiences_data[key] = existing_data[key]
                     except json.JSONDecodeError:
+                        # 静默化：不显示文件格式错误信息
                         print(f"现有的 JSON 文件格式有误，将创建新文件")
                     except Exception as e:
+                        # 静默化：简化错误输出
                         print(f"读取现有经验文件时出错: {e}")
 
                 # 添加新经验
@@ -295,11 +316,16 @@ class Sampler:
                 try:
                     with open(json_experience_file, "w", encoding="utf-8") as f:
                         json.dump(experiences_data, f, ensure_ascii=False, indent=2)
-                    print(f"成功更新经验 JSON 文件: {json_experience_file}")
+                    # 静默化：不显示文件操作成功信息
+                    # print(f"成功更新经验 JSON 文件: {json_experience_file}")
                 except Exception as e:
-                    print(f"保存 JSON 经验文件时出错: {e}")
+                    # 简化错误输出
+                    # print(f"保存 JSON 经验文件时出错: {e}")
+                    pass
             except Exception as e:
-                print(f"执行分析时出错: {str(e)}")
+                # 静默化：简化错误输出
+                # print(f"执行分析时出错: {str(e)}")
+                pass
 
     def _get_global_sample_nums(self) -> int:
         return self.__class__._global_samples_nums
@@ -309,6 +335,32 @@ class Sampler:
 
     def _global_sample_nums_plus_one(self):
         self.__class__._global_samples_nums += 1
+
+    def _notify_new_best_score(self, island_id, score, sample):
+        """通知新的最优分数"""
+        try:
+            # 提取方程的主要部分
+            lines = sample.split('\n')
+            main_equation = ""
+            for line in lines:
+                if 'dv =' in line or 'return' in line:
+                    main_equation += line.strip() + "; "
+
+            if not main_equation:
+                main_equation = lines[0][:100] + "..." if len(lines) > 0 and len(lines[0]) > 100 else (lines[0] if lines else "Unknown")
+
+            # 检查是否是全局最优
+            current_global_best = max(self._database._best_score_per_island.values()) if self._database._best_score_per_island else float('-inf')
+
+            if score > current_global_best:
+                print(f"🏆 NEW GLOBAL BEST: Island {island_id}, Score = {score:.6f}")
+                print(f"   Equation: {main_equation[:200]}{'...' if len(main_equation) > 200 else ''}")
+            else:
+                print(f"📈 Island {island_id} improved: Score = {score:.6f}")
+
+        except Exception:
+            # 如果提取方程失败，只显示基本信息
+            print(f"📈 Island {island_id} improved: Score = {score:.6f}")
 
 
 
@@ -379,10 +431,12 @@ class Sampler:
                     raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
                 resp = client.chat([{"role": "user", "content": analysis_prompt}])
                 analysis_result = resp.get('content', '') or ''
-                print(f"分析结果：{analysis_result}")
+                # 静默化：不显示分析结果详情
+                # print(f"分析结果：{analysis_result}")
                 analysis_results.append(analysis_result or "分析为空")
             except Exception as e:
-                print(f"分析请求发生错误: {str(e)}")
+                # 静默化：简化错误输出
+                # print(f"分析请求发生错误: {str(e)}")
                 analysis_results.append(f"分析请求发生错误: {str(e)}")
         return analysis_results
 
@@ -398,7 +452,8 @@ class Sampler:
     Returns:
         analysis_result: 模型对方程的分析结果
         """
-        print("========================进入了残差分析函数========================")
+        # 静默化：不显示函数进入标记
+       # print("========================进入了残差分析函数========================")
         # 直接使用传入的残差数据
         # 计算残差的统计信息
         res_values = residual[:, -1]  # 第三列是残差值
@@ -420,8 +475,9 @@ class Sampler:
                     last_experience = experiences[-1]
                     last_analysis = last_experience.get("analysis", "")
         except Exception as e:
-            print(f"加载残差数据时出错: {str(e)}")
-            print("Error details:")
+            # 静默化：简化错误输出
+              # print(f"加载残差数据时出错: {str(e)}")
+              # print("Error details:")
             traceback.print_exc()
 
 
@@ -473,9 +529,9 @@ Deliver results in the following structured format:
 
         """
         
-        
-        print("========这是输入的残差提示词==========\n")
-        print(res_analyze)
+          # 静默化：不显示残差提示词详情
+        # print("========这是输入的残差提示词==========\n")
+        # print(res_analyze)
         # 调用远程API分析结果
         try:
             client = SHARED_LLM_CLIENT
@@ -483,10 +539,12 @@ Deliver results in the following structured format:
                 raise ValueError("未注入共享 LLM 客户端，请在 Wrapper 中注入后再运行。")
             resp = client.chat([{"role": "user", "content": res_analyze}])
             analysis_result = resp.get('content', '') or ''
-            print(f"残差分析结果：{analysis_result}")
+            # 静默化：不显示残差分析结果详情
+            # print(f"残差分析结果：{analysis_result}")
             return analysis_result
         except Exception as e:
-            print(f"残差分析请求发生错误: {str(e)}")
+            # 静默化：简化错误输出
+            # print(f"残差分析请求发生错误: {str(e)}")
             return f"分析请求发生错误: {str(e)}"
 
 
@@ -592,12 +650,14 @@ class LocalLLM(LLM):
 
 ###############################################
                     # 现在_do_request返回两组响应，只取第一组(方程实现)
-                    print("运行了_draw_samples_local的_batch_inference分支")
+                    # 静默化：不显示分支运行信息
+                  # print("运行了_draw_samples_local的_batch_inference分支")
 
                     first_responses = self._do_request(prompt)
                     # 01 版本
                     # first_responses, second_responses = self._do_request(prompt)
-                    print("成功运行first_responses = self._do_request(prompt)")
+                    # 静默化：不显示运行成功信息
+                    # print("成功运行first_responses = self._do_request(prompt)")
 
                     # all_samples = first_responses
 
@@ -606,8 +666,9 @@ class LocalLLM(LLM):
                     # response = self._do_request(prompt)
                     # for res in response:
 
-##################################################### 
-                    print(first_responses)                   
+#####################################################
+                    # 静默化：不显示响应详情
+                    # print(first_responses)                   
                     for res in first_responses:
                         all_samples.append(res)
 
@@ -644,7 +705,8 @@ class LocalLLM(LLM):
         full_prompt = '\n'.join([self._instruction_prompt, prompt])
         client = getattr(self, '_client', None)
         if client is None:
-            print("未注入共享 LLM 客户端，无法进行采样。请在 Wrapper 中通过 set_shared_llm_client 注入。")
+            # 静默化：简化错误输出
+                  # print("未注入共享 LLM 客户端，无法进行采样。请在 Wrapper 中通过 set_shared_llm_client 注入。")
             return [""] * self._samples_per_prompt
 
         for _ in range(self._samples_per_prompt):
@@ -657,7 +719,8 @@ class LocalLLM(LLM):
                     all_samples.append(content)
                     break
                 except Exception as e:
-                    print(f"API请求发生错误: {str(e)}")
+                    # 静默化：简化错误输出
+                               # print(f"API请求发生错误: {str(e)}")
                     import time as _t
                     _t.sleep(1)
                     continue
@@ -756,7 +819,8 @@ class LocalLLM(LLM):
                     for i, exp in enumerate(all_selected_experiences, 1):
                         experience_prompt += f"idea{i}：\n"
                         # experience_prompt += f"(sample_order: {exp['sample_order']})\n"
-                        print("=================================sample_order: ==================================\n", exp['sample_order'])
+                        # 静默化：不显示样本顺序详情
+                                 # print("=================================sample_order: ==================================\n", exp['sample_order'])
                         
                         # 限制经验分析文本最多100个字符
                         analysis_text = exp["analysis"] if exp.get("analysis") else ""
@@ -776,7 +840,8 @@ class LocalLLM(LLM):
             p = 1.0  # 设置执行概率为50%，你可以根据需要调整这个值
             
             if random.random() < p and os.path.exists(experience_file):
-                print("use residual_analyze: True")
+                # 静默化：不显示残差分析使用标记
+                  # print("use residual_analyze: True")
 
                 residual_file = os.path.join(getattr(self, "_base_dir", "."), "residual_analyze", "residual_analyze.json")
                 if os.path.exists(residual_file):
@@ -798,7 +863,8 @@ class LocalLLM(LLM):
                             if len(last_analysis) > 2000:
                                 last_analysis = last_analysis[:2000] + "..."
                             experience_prompt += last_analysis
-                            print("=================================sample_order: ==================================\n", last_sample_order)
+                            # 静默化：不显示样本顺序详情
+                                     # print("=================================sample_order: ==================================\n", last_sample_order)
                             # 将经验添加到原始内容中
                             content_with_residual = experience_prompt + "\n\n" + content
 
@@ -827,8 +893,9 @@ class LocalLLM(LLM):
 
 
         except Exception as e:
-            print(f"加载经验数据时出错: {str(e)}")
-            print("Error details:")
+            # 静默化：简化错误输出
+                # print(f"加载经验数据时出错: {str(e)}")
+                # print("Error details:")
             traceback.print_exc()  # 输出详细的错误堆栈信息
         
         # 重复提示以进行批量推理
@@ -839,13 +906,15 @@ class LocalLLM(LLM):
         Find the mathematical function skeleton that represents acceleration in{problem_name_in_prompt} with driving force, given data on {independent_name_in_prompt}. 
         """
         content = head +'\n'+ content
-        print("========================最终输入给大模型的content========================\n")
-        print(content)
+        # 静默化：不显示最终输入内容
+            # print("========================最终输入给大模型的content========================\n")
+            # print(content)
 
         responses = []
         client = SHARED_LLM_CLIENT
         if client is None:
-            print("未注入共享 LLM 客户端，无法进行请求。请在 Wrapper 中通过 set_shared_llm_client 注入。")
+            # 静默化：简化错误输出
+                   # print("未注入共享 LLM 客户端，无法进行请求。请在 Wrapper 中通过 set_shared_llm_client 注入。")
             return [""] * repeat_prompt if self._batch_inference else ""
 
         for _ in range(repeat_prompt):
@@ -853,7 +922,8 @@ class LocalLLM(LLM):
                 resp = client.chat([{ "role": "user", "content": content }])
                 responses.append(resp.get('content', '') or '')
             except Exception as e:
-                print(f"API请求发生错误: {str(e)}")
+                # 静默化：简化错误输出
+                               # print(f"API请求发生错误: {str(e)}")
                 responses.append("")
 
         return responses if self._batch_inference else responses[0]

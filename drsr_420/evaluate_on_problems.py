@@ -27,7 +27,8 @@ def multi_start_bfgs(loss_func, n_starts=5, n_params=10):
 
 def evaluate(data: dict , equation):
         """ 从大模型的输出program中直接获取的"""
-        print('我运行了!')
+        # 静默化：不显示运行标记
+               # print('我运行了!')
 
         inputs, outputs = data['inputs'], data['outputs']
         X = inputs

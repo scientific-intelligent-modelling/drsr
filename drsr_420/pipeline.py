@@ -101,9 +101,9 @@ def main(
         verbose=True    # 可选：显示详细信息
     )
 
-    # 打印分析结果
-    print("\n===== 分析结果 =====")
-    print(result)
+    # 静默化：不显示详细分析结果
+    # print("\n===== 分析结果 =====")
+    # print(result)
 
     # Set global max sample nums.
     samplers = [sampler.Sampler(database, evaluators, 
