@@ -78,6 +78,24 @@ def _trim_function_body(generated_code: str) -> str:
     return '\n'.join(body_lines) + '\n\n'
 
 
+def _is_invalid_equation(sample: str) -> bool:
+    """快速门禁：过滤明显不合法/危险样本，避免进入沙箱执行。
+
+    注意：允许"仅函数体"的样本（不强制包含 def equation），因此不检查 'equation' 关键词。
+    仅做黑名单过滤与空白检查。
+    """
+    if not sample or not sample.strip():
+        return True
+    blacklist = [
+        'import ', 'print(', 'open(', 'os.', 'sys.', '__import__', 'subprocess', 'eval(', 'exec(', 'if __name__', 'while True:'
+    ]
+    lowered = sample.strip()
+    for token in blacklist:
+        if token in lowered:
+            return True
+    return False
+
+
 def _sample_to_program(
         generated_code: str,
         version_generated: int | None,
@@ -298,6 +316,10 @@ class Evaluator:
         
         # tuple[Any, bool, str]
         """ Compile the hypothesis sample into a program and executes it on test inputs. """
+        # 先做一次门禁过滤，避免执行无关/危险代码
+        if _is_invalid_equation(sample):
+            return None, 'invalid_equation', None, None
+
         new_function, program = _sample_to_program(
             sample, version_generated, self._template, self._function_to_evolve)
         scores_per_test = {}

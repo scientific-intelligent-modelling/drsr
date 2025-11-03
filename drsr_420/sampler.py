@@ -550,54 +550,48 @@ Deliver results in the following structured format:
 
 def _extract_body(sample: str, config: config_lib.Config) -> str:
     """
-    Extract the function body from a response sample, removing any preceding descriptions
-    and the function signature. Preserves indentation.
-    ------------------------------------------------------------------------------------------------------------------
-    Input example:
-    ```
-    This is a description...
-    def function_name(...):
-        return ...
-    Additional comments...
-    ```
-    ------------------------------------------------------------------------------------------------------------------
-    Output example:
-    ```
-        return ...
-    Additional comments...
-    ```
-    ------------------------------------------------------------------------------------------------------------------
-    If no function definition is found, returns the original sample.
+    仅提取 equation*(...) 的函数体，丢弃测试代码/顶层语句。
+    优先使用 AST 精确定位，失败则回退为基于缩进的保守截断。
     """
+    import ast, re
+
+    # 1) AST 路径：找到第一个以 equation 开头的函数，截取其函数体（保持原缩进）
+    try:
+        tree = ast.parse(sample)
+        lines = sample.splitlines()
+        target = None
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name.startswith('equation'):
+                target = node
+                break
+        if target and target.body:
+            body_start = target.body[0].lineno - 1
+            body_end = target.end_lineno
+            body = "\n".join(lines[body_start:body_end]) + "\n"
+            return body
+    except SyntaxError:
+        pass
+
+    # 2) 回退：从 def equation…: 的下一行开始，收集连续缩进行，遇到顶层非缩进行停止
     lines = sample.splitlines()
-    func_body_lineno = 0
-    find_def_declaration = False
-    
-    for lineno, line in enumerate(lines):
-        # find the first 'def' program statement in the response
-        if (line[:3] == 'def'):
-            func_body_lineno = lineno
-            find_def_declaration = True
+    func_def = None
+    for i, line in enumerate(lines):
+        if line.lstrip().startswith('def ') and re.search(r'\bequation\b', line):
+            func_def = i
             break
-    
-    if find_def_declaration:
-        # for gpt APIs
-        if config.use_api:
-            code = ''
-            for line in lines[func_body_lineno + 1:]:
-                code += line + '\n'
-        
-        # for mixtral
-        else:
-            code = ''
-            indent = '    '
-            for line in lines[func_body_lineno + 1:]:
-                if line[:4] != indent:
-                    line = indent + line
-                code += line + '\n'
-        
-        return code
-    
+    if func_def is not None:
+        body_lines = []
+        indent = '    '
+        for line in lines[func_def + 1:]:
+            if not line.strip():
+                body_lines.append(line)
+                continue
+            if not line.startswith(indent):
+                break
+            body_lines.append(line)
+        return "\n".join(body_lines) + "\n"
+
+    # 3) 最后回退：返回原样（尽量避免，但保证流程不崩）
     return sample
 
 
