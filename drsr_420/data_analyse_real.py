@@ -297,11 +297,7 @@ Deliver results in the following structured format:
         
         if verbose:
             print("分析完成")
-            residual_analyze_dir = os.path.join(self.base_dir, "residual_analyze")
-            if not os.path.exists(residual_analyze_dir):
-                os.makedirs(residual_analyze_dir)
-            
-            json_residual_file = os.path.join(residual_analyze_dir, "residual_analyze.json")
+            json_residual_file = os.path.join(self.base_dir, "residual_analyze.json")
                                 # 加载现有的初次分析数据（如果文件存在）
             data_list = []
             if os.path.exists(json_residual_file):

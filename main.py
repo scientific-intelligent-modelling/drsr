@@ -38,14 +38,9 @@ if __name__ == '__main__':
     exp_name = f"{args.problem_name}_{ts}"
     results_root = os.path.join("results", exp_name)
     logs_dir = os.path.join(results_root, "logs")
-    experiences_dir = os.path.join(results_root, "equation_experiences")
-    residual_dir = os.path.join(results_root, "residual_analyze")
-    specs_dir = os.path.join(results_root, "specs")
 
     os.makedirs(logs_dir, exist_ok=True)
-    os.makedirs(experiences_dir, exist_ok=True)
-    os.makedirs(residual_dir, exist_ok=True)
-    os.makedirs(specs_dir, exist_ok=True)
+    # 其他产物直接放在实验根目录（不再创建专用子目录）
 
     # 将标准输出和错误输出同时写入结果目录，便于统一归档
     class _Tee:
@@ -203,7 +198,7 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
 
         # 将动态渲染的 specification 保存到本次实验目录，便于调试
         try:
-            spec_out_path = os.path.join(specs_dir, f"spec_{args.problem_name}_dynamic.txt")
+            spec_out_path = os.path.join(results_root, f"spec_{args.problem_name}_dynamic.txt")
             with open(spec_out_path, "w", encoding="utf-8") as f:
                 f.write(specification)
             print(f"[INFO] Saved dynamic spec to: {spec_out_path}")
@@ -230,7 +225,7 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         try:
             import os as _os
             src_name = _os.path.basename(args.spec_path)
-            spec_out_path = os.path.join(specs_dir, f"used_{src_name}")
+            spec_out_path = os.path.join(results_root, f"used_{src_name}")
             with open(spec_out_path, "w", encoding="utf-8") as f:
                 f.write(specification)
             print(f"[INFO] Copied used spec to: {spec_out_path}")
@@ -242,11 +237,8 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
 
 
 ##################################################
-    # 创建经验保存目录
-    experience_dir = experiences_dir
-    os.makedirs(experience_dir, exist_ok=True)
-    # 定义 JSON 文件路径
-    json_experience_file = os.path.join(experience_dir, "experiences.json")
+    # 定义 JSON 文件路径（放在实验根目录）
+    json_experience_file = os.path.join(results_root, "experiences.json")
 
     # 如果文件不存在，则创建初始结构
     if not os.path.exists(json_experience_file):

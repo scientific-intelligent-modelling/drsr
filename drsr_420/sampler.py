@@ -184,11 +184,7 @@ class Sampler:
                     residual_result = self.analyze_equations_with_residual(best_sample,residual_data)
                     print(f"样本残差分析结果: {residual_result}")
                     # 创建目录存放残差分析结果
-                    residual_analyze_dir = os.path.join(self.config.results_root or ".", "residual_analyze")
-                    if not os.path.exists(residual_analyze_dir):
-                        os.makedirs(residual_analyze_dir)
-                    
-                    json_residual_file = os.path.join(residual_analyze_dir, "residual_analyze.json")
+                    json_residual_file = os.path.join(self.config.results_root or ".", "residual_analyze.json")
                     
                     # 加载现有的残差分析数据（如果文件存在）
                     residual_data_list = []
@@ -233,9 +229,7 @@ class Sampler:
 
                 # 创建目录存放分析结果
                 # import os
-                experience_dir = os.path.join(self.config.results_root or ".", "equation_experiences")
-                
-                json_experience_file = os.path.join(experience_dir, "experiences.json")
+                json_experience_file = os.path.join(self.config.results_root or ".", "experiences.json")
                 
 
                 # 加载现有的经验（如果文件存在）
@@ -413,7 +407,7 @@ class Sampler:
             import json
             import os
             import random
-            residual_file = os.path.join(self.config.results_root or ".", "residual_analyze", "residual_analyze.json")
+            residual_file = os.path.join(self.config.results_root or ".", "residual_analyze.json")
             if os.path.exists(residual_file):
                 with open(residual_file ,"r", encoding="utf-8") as f:
                     experiences = json.load(f)
@@ -687,7 +681,7 @@ class LocalLLM(LLM):
             # 计算经验文件中所有类别经验的总数
             current_sample_order = 0
 
-            experience_file = os.path.join(getattr(self, "_base_dir", "."), "equation_experiences", "experiences.json")
+            experience_file = os.path.join(getattr(self, "_base_dir", "."), "experiences.json")
 
             if os.path.exists(experience_file):
                 with open(experience_file, "r", encoding="utf-8") as f:
@@ -779,7 +773,7 @@ class LocalLLM(LLM):
             if random.random() < p and os.path.exists(experience_file):
                 print("use residual_analyze: True")
 
-                residual_file = os.path.join(getattr(self, "_base_dir", "."), "residual_analyze", "residual_analyze.json")
+                residual_file = os.path.join(getattr(self, "_base_dir", "."), "residual_analyze.json")
                 if os.path.exists(residual_file):
                     with open(residual_file ,"r", encoding="utf-8") as f:
                         experiences = json.load(f)
