@@ -110,7 +110,7 @@ residual_analysis_prompt = (
 # 动态渲染：无装饰器版本的上下文类
 # ==========================
 
-DEFAULT_BACKGROUND = "该方程的物理性质未知，需要根据残差经验进行分析。"
+DEFAULT_BACKGROUND = "The physical properties of this equation are unknown and need to be analyzed based on experience."
 
 def _ensure_feature_names(n, names):
     """确保有 n 个自变量名；缺省则按 x1..xN 生成。"""

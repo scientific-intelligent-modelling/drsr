@@ -19,7 +19,7 @@ parser.add_argument('--port', type=int, default=None)
 parser.add_argument('--use_api', type=bool, default=False)
 parser.add_argument('--api_model', type=str, default="gpt-3.5-turbo")
 parser.add_argument('--spec_path', type=str, default=None, help='可选：指定现有 spec 文件路径；不提供则使用 --data_csv 动态渲染')
-parser.add_argument('--problem_name', type=str, default="oscillator1")
+parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--run_id', type=int, default=1)
 parser.add_argument('--data_csv', type=str, default=None, help='当未提供 spec_path 时，使用该 CSV（含表头），前 n-1 列为特征，最后一列为因变量')
 parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # ===============
     # 工具：渲染 specification（NumPy 版）
     # ===============
-    DEFAULT_BACKGROUND = "该方程的物理性质未知，需要根据残差经验进行分析。"
+    DEFAULT_BACKGROUND = "The physical properties of this equation are unknown and need to be analyzed based on experience."
     DEFAULT_PROBLEM = args.problem_name
 
     SPEC_TEMPLATE_NUMPY = '''\
