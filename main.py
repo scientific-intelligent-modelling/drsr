@@ -11,12 +11,14 @@ from drsr_420 import pipeline
 from drsr_420 import config
 from drsr_420 import sampler
 from drsr_420 import evaluator
+import llm as llm_mod
 
 
 parser = ArgumentParser()
 parser.add_argument('--port', type=int, default=None)
 parser.add_argument('--use_api', type=bool, default=False)
 parser.add_argument('--api_model', type=str, default="gpt-3.5-turbo")
+parser.add_argument('--model', type=str, default=None, help='厂商/模型名，可覆盖环境变量中的模型名')
 parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--run_id', type=int, default=1)
 parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
@@ -69,6 +71,48 @@ if __name__ == '__main__':
         api_model=args.api_model,
         results_root=results_root,
     )
+    # 读取 LLM API 配置（从环境变量），并允许通过 --model 覆盖模型名
+    # 环境变量：LLM_API_HOST, LLM_API_KEY, LLM_API_MODEL, LLM_MAX_TOKENS
+    llm_api = {
+        'host': os.getenv('LLM_API_HOST', 'api.bltcy.ai'),
+        'api_key': os.getenv('LLM_API_KEY', 'sk-1zejrP7CKGPUXASwGpow3vOQ1Pjl5QzeU8xCjMrOEMSbqFQd'),
+        'model': args.model or os.getenv('LLM_API_MODEL', args.api_model or 'gpt-3.5-turbo'),
+        'max_tokens': int(os.getenv('LLM_MAX_TOKENS', '1024') or '1024'),
+        'temperature': float(os.getenv('LLM_TEMPERATURE', '0.6') or '0.6'),
+        'top_p': float(os.getenv('LLM_TOP_P', '0.3') or '0.3'),
+    }
+    # 构造一次性的 LLM 客户端实例（按任务传递，避免并行任务相互干扰）
+    # 模型名格式：provider/model，例如 bltcy/gpt-3.5-turbo
+    provider = None
+    model_name = llm_api['model']
+    if model_name and '/' in model_name:
+        provider, pure_model = model_name.split('/', 1)
+    else:
+        provider, pure_model = 'bltcy', model_name
+    api_key = llm_api.get('api_key', '')
+    provider = (provider or 'bltcy').lower()
+    client = None
+    try:
+        if provider in ('bltcy', 'blt'):
+            client = llm_mod.BltClient(api_key=api_key, model=pure_model)
+        elif provider in ('deepseek',):
+            client = llm_mod.DeepSeekClient(api_key=api_key, model=pure_model)
+        elif provider in ('siliconflow', 'sliconflow'):
+            client = llm_mod.SiliconflowClient(api_key=api_key, model=pure_model)
+        elif provider in ('ollama', 'local'):
+            client = llm_mod.OllamaClient(api_key=api_key, model=pure_model)
+        else:
+            # 默认走 BLT 网关（OpenAI 兼容）
+            client = llm_mod.BltClient(api_key=api_key, model=pure_model)
+        # 将部分生成参数写入 client.kwargs
+        client.kwargs.update({
+            'max_tokens': llm_api['max_tokens'],
+            'temperature': llm_api['temperature'],
+            'top_p': llm_api['top_p'],
+        })
+        print(f"[INFO] LLM client initialized: provider={provider}, model={pure_model}")
+    except Exception as e:
+        print(f"[WARN] Failed to init LLM client: {e}")
     # global_max_sample_num = 10000
     global_max_sample_num = 1000
 
@@ -238,4 +282,6 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         class_config=class_config,
         results_root=results_root,
         prompt_ctx=prompt_ctx,
+        llm_client=client,
+        llm_api=llm_api,
     )

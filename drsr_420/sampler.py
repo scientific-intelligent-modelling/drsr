@@ -67,17 +67,33 @@ class Sampler:
             max_sample_nums: int | None = None,
             llm_class: Type[LLM] = LLM,
             prompt_ctx: pc.PromptContext | None = None,
+            llm_client: object | None = None,
+            llm_api: dict | None = None,
     ):
         self._samples_per_prompt = samples_per_prompt
         self._database = database
         self._evaluators = evaluators
+        # 覆盖模块级 API 配置（最小改动注入）
+        if llm_api:
+            try:
+                global API_HOST, API_KEY, API_MODEL, MAX_TOKENS
+                API_HOST = llm_api.get('host', API_HOST)
+                API_KEY = llm_api.get('api_key', API_KEY)
+                API_MODEL = llm_api.get('model', API_MODEL)
+                MAX_TOKENS = llm_api.get('max_tokens', MAX_TOKENS)
+            except Exception:
+                pass
         self._prompt_ctx = prompt_ctx
+        self._llm_client = llm_client
         # 传递上下文给 LLM，用于渲染指令与头部
         try:
-            self._llm = llm_class(samples_per_prompt, prompt_ctx=self._prompt_ctx)
+            self._llm = llm_class(samples_per_prompt, prompt_ctx=self._prompt_ctx, llm_client=self._llm_client)
         except TypeError:
             # 向后兼容：旧实现不接收 prompt_ctx
-            self._llm = llm_class(samples_per_prompt)
+            try:
+                self._llm = llm_class(samples_per_prompt, prompt_ctx=self._prompt_ctx)
+            except TypeError:
+                self._llm = llm_class(samples_per_prompt)
         self._max_sample_nums = max_sample_nums
         self.config = config
 
@@ -350,37 +366,12 @@ class Sampler:
                 sample=sample_each,
                 question=new__question,
             )
-            # 调用远程API分析结果
+            # 调用远程API分析结果（仅使用注入的 llm_client）
             try:
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": analysis_prompt
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    analysis_result = data['choices'][0]['message']['content']
-                    print(f"分析结果：{analysis_result}")
-                    analysis_results.append(analysis_result)
-                else:
-                    print(f"API返回数据格式错误: {data}")
-                    analysis_results.append("分析失败")
-                    
+                resp = self._llm_client.chat([{"role": "user", "content": analysis_prompt}])
+                analysis_result = resp.get('content', '')
+                print(f"分析结果：{analysis_result}")
+                analysis_results.append(analysis_result)
             except Exception as e:
                 print(f"分析请求发生错误: {str(e)}")
                 analysis_results.append(f"分析请求发生错误: {str(e)}")
@@ -438,37 +429,12 @@ class Sampler:
         
         print("========这是输入的残差提示词==========\n")
         print(res_analyze)
-        # 调用远程API分析结果
+        # 调用远程API分析结果（仅使用注入的 llm_client）
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": res_analyze
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                analysis_result = data['choices'][0]['message']['content']
-                print(f"残差分析结果：{analysis_result}")
-                return analysis_result
-            else:
-                print(f"API返回数据格式错误: {data}")
-                return f"API返回数据格式错误"
-                
+            resp = self._llm_client.chat([{"role": "user", "content": res_analyze}])
+            analysis_result = resp.get('content', '')
+            print(f"残差分析结果：{analysis_result}")
+            return analysis_result
         except Exception as e:
             print(f"残差分析请求发生错误: {str(e)}")
             return f"分析请求发生错误: {str(e)}"
@@ -529,7 +495,9 @@ def _extract_body(sample: str, config: config_lib.Config) -> str:
 
 
 class LocalLLM(LLM):
-    def __init__(self, samples_per_prompt: int, batch_inference: bool = True, trim=True, prompt_ctx: pc.PromptContext | None = None) -> None:
+    def __init__(self, samples_per_prompt: int, batch_inference: bool = True, trim=True,
+                 prompt_ctx: pc.PromptContext | None = None,
+                 llm_client: object | None = None) -> None:
         """
         Args:
             batch_inference: Use batch inference when sample equation program skeletons. The batch size equals to the samples_per_prompt.
@@ -537,6 +505,7 @@ class LocalLLM(LLM):
         super().__init__(samples_per_prompt)
 
         self._prompt_ctx = prompt_ctx
+        self._llm_client = llm_client
         instruction_prompt = (self._prompt_ctx.render_instruction() if self._prompt_ctx else pc.instruction_prompt)
         self._batch_inference = batch_inference
         self._instruction_prompt = instruction_prompt
@@ -624,41 +593,15 @@ class LocalLLM(LLM):
     def _draw_samples_api(self, prompt: str, config: config_lib.Config) -> Collection[str]:
         all_samples = []
         prompt = '\n'.join([self._instruction_prompt, prompt])
-        
         for _ in range(self._samples_per_prompt):
-            while True:
-                try:
-                    conn = http.client.HTTPSConnection(API_HOST)
-                    payload = json.dumps({
-                        "max_tokens": MAX_TOKENS,
-                        "model": API_MODEL,
-                        "temperature": 0.6,
-                        "top_p": 0.3,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": prompt
-                            }
-                        ]
-                    })
-                    headers = {
-                        'Authorization': f"Bearer {API_KEY}",
-                        'Content-Type': 'application/json'
-                    }
-                    conn.request("POST", "/v1/chat/completions", payload, headers)
-                    res = conn.getresponse()
-                    data = json.loads(res.read().decode("utf-8"))
-                    response = data['choices'][0]['message']['content']
-                    
-                    if self._trim:
-                        response = _extract_body(response, config)
-                    
-                    all_samples.append(response)
-                    break
-
-                except Exception:
-                    continue
-        
+            try:
+                resp = self._llm_client.chat([{"role": "user", "content": prompt}])
+                response = resp.get('content', '')
+                if self._trim:
+                    response = _extract_body(response, config)
+                all_samples.append(response)
+            except Exception:
+                all_samples.append("")
         return all_samples
     
     
@@ -853,39 +796,26 @@ class LocalLLM(LLM):
         print("========================最终输入给大模型的content========================\n")
         print(content)
 
+        # 优先使用传入的 llm_client
+        client = getattr(self, "_llm_client", None)
+        if client is not None:
+            try:
+                responses = []
+                for _ in range(repeat_prompt):
+                    resp = client.chat([{"role": "user", "content": content}])
+                    responses.append(resp.get('content', ''))
+                return responses if self._batch_inference else responses[0]
+            except Exception as e:
+                print(f"API请求发生错误: {str(e)}")
+                return [""] * repeat_prompt if self._batch_inference else ""
+        
+        # fallback 到 http.client
         try:
             responses = []
             for _ in range(repeat_prompt):
-                conn = http.client.HTTPSConnection(API_HOST)
-                payload = json.dumps({
-                    "max_tokens": MAX_TOKENS,
-                    "model": API_MODEL,
-                    "temperature": 0.6,
-                    "top_p": 0.3,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": content
-                        }
-                    ]
-                })
-                headers = {
-                    'Authorization': f"Bearer {API_KEY}",
-                    'Content-Type': 'application/json'
-                }
-                conn.request("POST", "/v1/chat/completions", payload, headers)
-                res = conn.getresponse()
-                data = json.loads(res.read().decode("utf-8"))
-                
-                if 'choices' in data and len(data['choices']) > 0:
-                    response_content = data['choices'][0]['message']['content']
-                    responses.append(response_content)
-                else:
-                    print(f"API返回数据格式错误: {data}")
-                    responses.append("")
-            
+                resp = self._llm_client.chat([{"role": "user", "content": content}])
+                responses.append(resp.get('content', ''))
             return responses if self._batch_inference else responses[0]
-            
         except Exception as e:
             print(f"API请求发生错误: {str(e)}")
             return [""] * repeat_prompt if self._batch_inference else ""

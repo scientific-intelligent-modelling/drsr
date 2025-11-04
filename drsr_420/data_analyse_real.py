@@ -23,7 +23,8 @@ class DataAnalyzer:
     SAMPLE_SIZE = 100   # 默认随机采样100条数据
     
     def __init__(self, api_url: str = f"http://127.0.0.1:{Port}/completions", timeout: int = 300,
-                 decimal_places: int = None, sample_size: int = None, base_dir: str | None = None):
+                 decimal_places: int = None, sample_size: int = None, base_dir: str | None = None,
+                 llm_client: object | None = None):
         """
         初始化数据分析器
         
@@ -36,6 +37,7 @@ class DataAnalyzer:
         self.api_url = api_url
         self.timeout = timeout
         self.base_dir = base_dir or "."
+        self.llm_client = llm_client
         
         # 如果传入了自定义值，则覆盖默认值
         if decimal_places is not None:
@@ -195,35 +197,10 @@ Deliver results in the following structured format:
             str: 模型响应
         """
         try:
-            conn = http.client.HTTPSConnection(API_HOST)
-            payload = json.dumps({
-                "max_tokens": MAX_TOKENS,
-                "model": API_MODEL,
-                "temperature": 0.6,
-                "top_p": 0.3,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            })
-            headers = {
-                'Authorization': f"Bearer {API_KEY}",
-                'Content-Type': 'application/json'
-            }
-            conn.request("POST", "/v1/chat/completions", payload, headers)
-            res = conn.getresponse()
-            data = json.loads(res.read().decode("utf-8"))
-            print("==============================初次残差api已运行====================================")
-            
-            if 'choices' in data and len(data['choices']) > 0:
-                return data['choices'][0]['message']['content']
-            else:
-                error_msg = f"API返回数据格式错误: {data}"
-                print(error_msg)
-                return error_msg
-                
+            if self.llm_client is None:
+                raise RuntimeError('DataAnalyzer requires llm_client, but got None')
+            resp = self.llm_client.chat([{"role": "user", "content": prompt}])
+            return resp.get('content', '')
         except Exception as e:
             error_msg = f"请求出错: {str(e)}"
             print(error_msg)
