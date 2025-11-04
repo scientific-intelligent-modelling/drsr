@@ -32,6 +32,33 @@ import os
 import traceback
 from typing import Any
 
+# 简单清洗：保留到首个 return 为止，移除危险/无关行，并确保缩进
+def _sanitize_equation_body(text: str) -> str:
+    if not isinstance(text, str):
+        return ""
+    lines = text.splitlines()
+    cleaned = []
+    found_return = False
+    blacklist = (
+        'import ', 'print(', 'open(', 'os.', 'sys.', '__import__', 'subprocess', 'eval(', 'exec(', 'if __name__', 'while True:'
+    )
+    for raw in lines:
+        s = raw.strip()
+        if not s:
+            # 跳过开头的空行
+            if not cleaned:
+                continue
+        # 黑名单过滤
+        lower_line = s.lower()
+        if any(tok in lower_line for tok in blacklist):
+            continue
+        cleaned.append(('    ' + s) if s else s)  # 确保基本缩进
+        if s.startswith('return'):
+            found_return = True
+            break
+    # 若没有 return，尽量返回清理后的内容
+    return "\n".join(cleaned) + ("\n" if cleaned else "")
+
 SHARED_LLM_CLIENT: Any = None
 
 def set_shared_llm_client(client):
@@ -123,8 +150,10 @@ class Sampler:
                 self._global_sample_nums_plus_one()
                 cur_global_sample_nums = self._get_global_sample_nums()
                 chosen_evaluator: evaluator.Evaluator = np.random.choice(self._evaluators)
+                # 先清洗样本，去除测试代码/危险语句，仅保留函数体片段
+                sample_clean = _sanitize_equation_body(sample)
                 score, error_msg, residual, opt_params = chosen_evaluator.analyse(
-                    sample,
+                    sample_clean,
                     prompt.island_id,
                     prompt.version_generated,
                     **kwargs,
@@ -180,7 +209,9 @@ class Sampler:
                 #先直接进入第三次
                 # 静默化：不显示分析过程详情
                 # print("\n===== 方程和分数分析开始 =====")
-                analysis_result = self.analyze_equations_with_scores(samples, quality_for_sample, error_for_samlple, prompt)
+                # 使用清洗后的样本进行分析，提高一致性
+                cleaned_samples = [ _sanitize_equation_body(s) for s in samples ]
+                analysis_result = self.analyze_equations_with_scores(cleaned_samples, quality_for_sample, error_for_samlple, prompt)
                 # print("总的分析结果：---------")
                 # print(analysis_result)
                 # print("===== 方程和分数分析结束 =====\n")
@@ -275,7 +306,7 @@ class Sampler:
                         print(f"读取现有经验文件时出错: {e}")
 
                 # 添加新经验
-                for i, (sample_text, quality, analysis, error_msg) in enumerate(zip(samples, quality_for_sample, analysis_result, error_for_samlple)):
+                for i, (sample_text, quality, analysis, error_msg) in enumerate(zip(cleaned_samples, quality_for_sample, analysis_result, error_for_samlple)):
                     # 获取当前样本的信息
                     current_sample_order = self._get_global_sample_nums() - len(samples) + i + 1  # 计算当前样本的顺序号
                     
@@ -293,6 +324,7 @@ class Sampler:
                         "analysis": analysis,
                         "sample_order": current_sample_order,  # 添加样本顺序号
                         "sample_time": sample_time,
+                        # 仅保存清洗后的函数体，避免测试代码/危险语句
                         "equation": sample_text,
                         "score": score_for_sample[i],
                     }
@@ -604,8 +636,14 @@ class LocalLLM(LLM):
         """
         super().__init__(samples_per_prompt)
 
-        instruction_prompt = ("You are a helpful assistant tasked with discovering mathematical function structures for scientific systems. \
-                             Complete the 'equation' function below, considering the physical meaning and relationships of inputs.\n\n")
+        instruction_prompt = (
+            "You are a helpful assistant tasked with discovering mathematical function structures for scientific systems. "
+            "Complete ONLY the body lines of the 'equation' function below, considering the physical meaning and relationships of inputs.\n"
+            "Rules:\n"
+            "- Do not output 'def ...' header, imports, tests, prints, or random sampling.\n"
+            "- Use variable names 'col0', 'col1', ... that match the function signature.\n"
+            "- Return a numpy array with the same length as inputs.\n\n"
+        )
         self._batch_inference = batch_inference
         self._instruction_prompt = instruction_prompt
         self._trim = trim

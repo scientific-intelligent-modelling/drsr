@@ -226,11 +226,56 @@ class LocalSandbox(Sandbox):
         # print(f'{str(function).strip()}\n-----------------------------------------------------')
         # print(f'Score: {results}\n=====================================================\n\n')
 
+    def _clean_program_text(self, program: str, function_name: str) -> str:
+        """
+        清理程序文本，移除 LLM 可能在函数体后添加的测试代码。
+        只保留到目标函数的 return 语句为止的内容。
+        """
+        try:
+            # 解析 AST
+            tree = ast.parse(program)
+            
+            # 找到目标函数节点
+            target_func = None
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef) and node.name == function_name:
+                    target_func = node
+                    break
+            
+            if target_func is None:
+                # 找不到目标函数，返回原始程序
+                return program
+            
+            # 获取函数结束行号
+            func_end_line = target_func.end_lineno
+            
+            # 按行分割程序
+            lines = program.split('\n')
+            
+            # 只保留到函数结束行的内容，再加上其他非函数定义的全局代码
+            # 简单策略：保留从开头到函数结束行，丢弃之后的内容
+            # 但要保留前面的 import 和全局变量定义
+            
+            # 找到函数开始行
+            func_start_line = target_func.lineno
+            
+            # 保留：1) 函数之前的所有内容  2) 函数本身  3) 丢弃函数之后的测试代码
+            cleaned_lines = lines[:func_end_line]
+            
+            return '\n'.join(cleaned_lines)
+            
+        except Exception:
+            # 如果清理失败，返回原始程序
+            return program
+
 
 
     def _compile_and_run_function(self, program, function_to_run, function_to_evolve, 
                                   dataset, numba_accelerate, result_queue):
         try:
+            # [PATCH] 清理方程中的测试代码，避免 LLM 生成的额外代码导致编译失败
+            program = self._clean_program_text(program, function_to_evolve)
+            
             # optimize the code (decorate function_to_run with @numba.jit())
             if numba_accelerate:
                 program = evaluator_accelerate.add_numba_decorator(
