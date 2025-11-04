@@ -4,7 +4,6 @@ import json
 import os
 from argparse import ArgumentParser
 import numpy as np
-import torch
 import pandas as pd
 
 

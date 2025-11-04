@@ -4,7 +4,6 @@ import os
 import time
 from argparse import ArgumentParser
 import numpy as np
-import torch
 import pandas as pd
 import sys
 
@@ -18,10 +17,9 @@ parser = ArgumentParser()
 parser.add_argument('--port', type=int, default=None)
 parser.add_argument('--use_api', type=bool, default=False)
 parser.add_argument('--api_model', type=str, default="gpt-3.5-turbo")
-parser.add_argument('--spec_path', type=str, default=None, help='可选：指定现有 spec 文件路径；不提供则使用 --data_csv 动态渲染')
 parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--run_id', type=int, default=1)
-parser.add_argument('--data_csv', type=str, default=None, help='当未提供 spec_path 时，使用该 CSV（含表头），前 n-1 列为特征，最后一列为因变量')
+parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
 parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
 args = parser.parse_args()
 
@@ -169,64 +167,31 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
             LINEAR_SEED=linear_seed,
         )
 
-    # 判断是否使用动态 CSV 接口
-    use_dynamic = (args.spec_path is None) or (str(args.spec_path).strip() == '')
+    # 加载 CSV（强制使用 data_csv 模式）
+    X, y, feature_names, y_name = _load_from_csv(args.data_csv)
+    background = args.background
 
-    if use_dynamic:
-        # 1) 加载 CSV
-        if not args.data_csv:
-            raise SystemExit('未提供 spec_path 时，必须提供 --data_csv 指向含表头的 CSV 文件')
-        X, y, feature_names, y_name = _load_from_csv(args.data_csv)
-        background = args.background
+    # 渲染 specification
+    specification = _render_spec_numpy(
+        n_features=X.shape[1],
+        feature_names=feature_names,
+        dependent_name=y_name,
+        background=background,
+        problem=args.problem_name,
+        max_nparams=10,
+    )
 
-        # 2) 渲染 specification
-        specification = _render_spec_numpy(
-            n_features=X.shape[1],
-            feature_names=feature_names,
-            dependent_name=y_name,
-            background=background,
-            problem=args.problem_name,
-            max_nparams=10,
-        )
+    data_dict = {'inputs': X, 'outputs': y}
+    dataset = {'data': data_dict}
 
-        data_dict = {'inputs': X, 'outputs': y}
-        dataset = {'data': data_dict}
-
-        # 将动态渲染的 specification 保存到本次实验目录，便于调试
-        try:
-            spec_out_path = os.path.join(results_root, f"spec_{args.problem_name}_dynamic.txt")
-            with open(spec_out_path, "w", encoding="utf-8") as f:
-                f.write(specification)
-            print(f"[INFO] Saved dynamic spec to: {spec_out_path}")
-        except Exception as e:
-            print(f"[WARN] Failed to save dynamic spec: {e}")
-    else:
-        # Load prompt specification（旧路径）
-        with open(os.path.join(args.spec_path), encoding="utf-8") as f:
-            specification = f.read()
-
-        # Load dataset（旧数据路径）
-        problem_name = args.problem_name
-        df = pd.read_csv('./data/'+problem_name+'/train.csv')
-        data = np.array(df)
-        X = data[:, :-1]
-        y = data[:, -1].reshape(-1)
-        if 'torch' in args.spec_path:
-            X = torch.Tensor(X)
-            y = torch.Tensor(y)
-        data_dict = {'inputs': X, 'outputs': y}
-        dataset = {'data': data_dict}
-
-        # 将使用的 specification 也复制一份到实验目录，便于调试
-        try:
-            import os as _os
-            src_name = _os.path.basename(args.spec_path)
-            spec_out_path = os.path.join(results_root, f"used_{src_name}")
-            with open(spec_out_path, "w", encoding="utf-8") as f:
-                f.write(specification)
-            print(f"[INFO] Copied used spec to: {spec_out_path}")
-        except Exception as e:
-            print(f"[WARN] Failed to copy used spec: {e}")
+    # 将动态渲染的 specification 保存到本次实验目录，便于调试
+    try:
+        spec_out_path = os.path.join(results_root, f"spec_{args.problem_name}_dynamic.txt")
+        with open(spec_out_path, "w", encoding="utf-8") as f:
+            f.write(specification)
+        print(f"[INFO] Saved dynamic spec to: {spec_out_path}")
+    except Exception as e:
+        print(f"[WARN] Failed to save dynamic spec: {e}")
 
 
 
@@ -255,17 +220,15 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
 ##################################################
     
     
-    # PromptContext：仅在动态模式下构造，保证提示一致性
+    # PromptContext：保证提示一致性（变量名/背景）
     from drsr_420 import prompt_config as pc
-    prompt_ctx = None
-    if use_dynamic:
-        prompt_ctx = pc.PromptContext(
-            n_features=X.shape[1],
-            feature_names=feature_names,
-            dependent_name=y_name,
-            problem_name=args.problem_name,
-            background=background,
-        )
+    prompt_ctx = pc.PromptContext(
+        n_features=X.shape[1],
+        feature_names=feature_names,
+        dependent_name=y_name,
+        problem_name=args.problem_name,
+        background=background,
+    )
 
     pipeline.main(
         specification=specification,
