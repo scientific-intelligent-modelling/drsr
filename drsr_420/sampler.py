@@ -30,9 +30,7 @@ import json
 import http.client
 import os
 import traceback
-problem_name_in_prompt = 'a damped nonlinear oscillator system with driving force'
-dependent_name_in_prompt = 'acceleration'
-independent_name_in_prompt = 'position, and velocity'
+from drsr_420 import prompt_config as pc
 Port = '5000'
 
 # API配置
@@ -68,11 +66,18 @@ class Sampler:
             config: config_lib.Config,
             max_sample_nums: int | None = None,
             llm_class: Type[LLM] = LLM,
+            prompt_ctx: pc.PromptContext | None = None,
     ):
         self._samples_per_prompt = samples_per_prompt
         self._database = database
         self._evaluators = evaluators
-        self._llm = llm_class(samples_per_prompt)
+        self._prompt_ctx = prompt_ctx
+        # 传递上下文给 LLM，用于渲染指令与头部
+        try:
+            self._llm = llm_class(samples_per_prompt, prompt_ctx=self._prompt_ctx)
+        except TypeError:
+            # 向后兼容：旧实现不接收 prompt_ctx
+            self._llm = llm_class(samples_per_prompt)
         self._max_sample_nums = max_sample_nums
         self.config = config
 
@@ -319,46 +324,35 @@ class Sampler:
 
         for sample_each in samples:
 
-            if quality_for_sample[i] == 'Good':
-                new__question = f"""
-                The optimized function skeleton you just answered scored higher. Please summarize useful experience.
-                STRICTLY follow these rules:
-                1. Use the exact phrasing "when seeking for the mathematical function skeleton that represents {dependent_name_in_prompt} in{problem_name_in_prompt}, I can ..."
-                2. Summarize ONLY the key success factors
-                3. You need to make your answer as concise as possible
-                """
-# 1. when seeking for the mathematical function skeleton that represents acceleration in{problem_name_in_prompt}, I can
-# 2. Identify ONE crucial improvement point
-# 3. You need to make your answer as concise as possible
-            elif quality_for_sample[i] == 'Bad':
-                new__question = f"""
-                The optimized function skeleton you just answered scored lower. What lessons can you draw from it?
-                STRICTLY follow these rules: 
-                1. Use the exact phrasing "when seeking for the mathematical function skeleton that represents {dependent_name_in_prompt} in{problem_name_in_prompt}, I can ..."
-                2. Identify ONE crucial improvement point
-                3. You need to make your answer as concise as possible
-                """
-            
-            elif quality_for_sample[i] == 'None':
-                new__question = f"""
-                The optimized function skeleton you just answered failed with error: {error_for_sample[i]}, What lessons can you draw from it?
-                STRICTLY follow these rules:
-                1. Use the exact phrasing "when seeking for the mathematical function skeleton that represents {dependent_name_in_prompt} in{problem_name_in_prompt}, I need ..."
-                2. Address the SPECIFIC error: {error_for_sample[i]}
-                3. Identify ONE crucial improvement point
-                4. You need to make your answer as concise as possible
-                """
+            if hasattr(self, "_prompt_ctx") and self._prompt_ctx is not None:
+                new__question = self._prompt_ctx.render_analysis_question(
+                    quality_for_sample[i],
+                    error_for_sample[i] if quality_for_sample[i] == 'None' else None,
+                )
+            else:
+                if quality_for_sample[i] == 'Good':
+                    new__question = pc.analysis_question_good.format(
+                        dependent=pc.dependent_name_in_prompt,
+                        problem=pc.problem_name_in_prompt,
+                    )
+                elif quality_for_sample[i] == 'Bad':
+                    new__question = pc.analysis_question_bad.format(
+                        dependent=pc.dependent_name_in_prompt,
+                        problem=pc.problem_name_in_prompt,
+                    )
+                elif quality_for_sample[i] == 'None':
+                    new__question = pc.analysis_question_none.format(
+                        dependent=pc.dependent_name_in_prompt,
+                        problem=pc.problem_name_in_prompt,
+                        error=error_for_sample[i]
+                    )
             i += 1
 
-            analysis_prompt = f"""
-            Here's our previous conversation:
-
-            user: {prompt}
-
-            assistant: {sample_each}
-
-            user: {new__question}
-            """
+            analysis_prompt = pc.analysis_conversation_template.format(
+                prompt=prompt,
+                sample=sample_each,
+                question=new__question,
+            )
             # 调用远程API分析结果
             try:
                 conn = http.client.HTTPSConnection(API_HOST)
@@ -435,52 +429,14 @@ class Sampler:
 
 
         # 构建分析提示
-        res_analyze = f"""
-You are a data analysis expert. I will provide a dataset structure for a damped nonlinear oscillator system as follows:
-previous conclusions:{last_analysis}
-dataset:{residual}
-The equation corresponding to the residuals:{sample}
-
-The first two columns are independent variables:
-x(position), 
-v(velocity).
-
-The third column is the dependent variable a(acceleration).
-The forth column contains residuals (calculated as observed value - predicted value from the equation).
-Each row represents a set of independent variables (x, v) and their corresponding dependent variable a value, and the residual value.
-
-Task Requirements:
-
-1.Please help me analyze and summarize the influence of the changes in the values of different independent variables on the dependent variable, 
-as well as the possible intrinsic relationships among different independent variables.
-
-Your response only needs to answer your analysis results in the form below, and you don't need to show your analysis process.
-
-"""+"""
-2.##Output Format##:
-STRICTLY deliver results in the following structured format:
-
-Deliver results in the following structured format:
-
-  "output_format": {
-    "analysis": {
-      "independent_to_dependent_relationships": {
-        "x ": [
-          "Hint: Here you need to analyze the functional relationship between x and a in different intervals"
-        ],
-        "v ": [
-          "Hint: Here you need to analyze the functional relationship between v and a in different intervals"
-        ]
-      },
-      "inter_relationships_between_independents": {
-        "x vs v": [
-          "Hint: Here you need to analyze the possible functional relationship between x and v in different intervals. If not, you can leave it blank."
-        ]
-      }
-    }
-  }
-
-        """
+        if hasattr(self, "_prompt_ctx") and self._prompt_ctx is not None:
+            res_analyze = self._prompt_ctx.render_residual_analysis_prompt(last_analysis, residual, sample)
+        else:
+            res_analyze = pc.residual_analysis_prompt.format(
+                last_analysis=last_analysis,
+                residual=residual,
+                sample=sample,
+            )
         
         
         print("========这是输入的残差提示词==========\n")
@@ -576,15 +532,15 @@ def _extract_body(sample: str, config: config_lib.Config) -> str:
 
 
 class LocalLLM(LLM):
-    def __init__(self, samples_per_prompt: int, batch_inference: bool = True, trim=True) -> None:
+    def __init__(self, samples_per_prompt: int, batch_inference: bool = True, trim=True, prompt_ctx: pc.PromptContext | None = None) -> None:
         """
         Args:
             batch_inference: Use batch inference when sample equation program skeletons. The batch size equals to the samples_per_prompt.
         """
         super().__init__(samples_per_prompt)
 
-        instruction_prompt = ("You are a helpful assistant tasked with discovering mathematical function structures for scientific systems. \
-                             Complete the 'equation' function below, considering the physical meaning and relationships of inputs.\n\n")
+        self._prompt_ctx = prompt_ctx
+        instruction_prompt = (self._prompt_ctx.render_instruction() if self._prompt_ctx else pc.instruction_prompt)
         self._batch_inference = batch_inference
         self._instruction_prompt = instruction_prompt
         self._trim = trim
@@ -795,11 +751,11 @@ class LocalLLM(LLM):
                 
                 # 如果有经验可用，构建经验提示
                 if all_selected_experiences:
-                    experience_prompt = "\n\n### The following are ideas summarized based on past experiences in solving such problems. ###\n\n"
+                    experience_prompt = pc.ideas_block_title
                     
                     # 为每个经验分配编号
                     for i, exp in enumerate(all_selected_experiences, 1):
-                        experience_prompt += f"idea{i}：\n"
+                        experience_prompt += pc.idea_item_prefix.format(index=i)
                         # experience_prompt += f"(sample_order: {exp['sample_order']})\n"
                         print("=================================sample_order: ==================================\n", exp['sample_order'])
                         
@@ -837,7 +793,11 @@ class LocalLLM(LLM):
                         if last_equation is not None:
                         
                             # 构建提示
-                            experience_prompt = f"\n\n### The following is the analysis result of the existing data on{problem_name_in_prompt}, which will assist you in answering the question. ###\n\n"
+                            experience_prompt = (
+                                self._prompt_ctx.render_residual_block_title()
+                                if hasattr(self, "_prompt_ctx") and self._prompt_ctx is not None
+                                else pc.residual_block_title.format(problem=pc.problem_name_in_prompt)
+                            )
                             # experience_prompt += f"经验{last_sample_order}：\n"
                             # experience_prompt += f"(sample_order: {last_sample_order})\n"
                             if len(last_analysis) > 2000:
@@ -853,7 +813,11 @@ class LocalLLM(LLM):
                         
                         else:
                             # 构建提示
-                            experience_prompt = f"\n\n### The following is the analysis result of the existing data on{problem_name_in_prompt}, which will assist you in answering the question. ###\n\n"
+                            experience_prompt = (
+                                self._prompt_ctx.render_residual_block_title()
+                                if hasattr(self, "_prompt_ctx") and self._prompt_ctx is not None
+                                else pc.residual_block_title.format(problem=pc.problem_name_in_prompt)
+                            )
                             # experience_prompt += f"经验{last_sample_order}：\n"
                             # experience_prompt += f"(sample_order: {last_sample_order})\n"
                             if isinstance(last_analysis, list):
@@ -880,9 +844,14 @@ class LocalLLM(LLM):
         repeat_prompt: int = self._samples_per_prompt if self._batch_inference else 1
 
 
-        head = f"""
-        Find the mathematical function skeleton that represents acceleration in{problem_name_in_prompt} with driving force, given data on {independent_name_in_prompt}. 
-        """
+        if hasattr(self, "_prompt_ctx") and self._prompt_ctx is not None:
+            head = self._prompt_ctx.render_head()
+        else:
+            head = pc.head_template.format(
+                dependent=pc.dependent_name_in_prompt,
+                problem=pc.problem_name_in_prompt,
+                independent=pc.independent_name_in_prompt,
+            )
         content = head +'\n'+ content
         print("========================最终输入给大模型的content========================\n")
         print(content)

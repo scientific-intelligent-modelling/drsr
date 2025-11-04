@@ -106,11 +106,13 @@ def main(
     print(result)
 
     # Set global max sample nums.
+    prompt_ctx = kwargs.get('prompt_ctx', None)
     samplers = [sampler.Sampler(database, evaluators, 
                                 config.samples_per_prompt, 
                                 max_sample_nums=max_sample_nums, 
                                 llm_class=class_config.llm_class,
-                                config = config) 
+                                config = config,
+                                prompt_ctx=prompt_ctx) 
                                 for _ in range(config.num_samplers)]
 
     # This loop can be executed in parallel on remote sampler machines. As each
