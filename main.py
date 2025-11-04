@@ -16,9 +16,6 @@ import llm as llm_mod
 
 parser = ArgumentParser()
 parser.add_argument('--port', type=int, default=None)
-parser.add_argument('--use_api', type=bool, default=False)
-parser.add_argument('--api_model', type=str, default="gpt-3.5-turbo")
-parser.add_argument('--model', type=str, default=None, help='厂商/模型名（provider/model），可覆盖配置中的模型名')
 parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON）')
 parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--run_id', type=int, default=1)
@@ -68,11 +65,9 @@ if __name__ == '__main__':
     # 不再设置独立日志目录
 
     config = config.Config(
-        use_api=args.use_api,
-        api_model=args.api_model,
         results_root=results_root,
     )
-    # 读取 LLM 配置（优先从 llm.config 文件），并允许通过 --model 覆盖模型名
+    # 读取 LLM 配置（仅从 llm.config 文件加载模型名，不再支持命令行覆盖）
     import json as _json
     if not os.path.exists(args.llm_config):
         try:
@@ -90,8 +85,6 @@ if __name__ == '__main__':
             print(f"[WARN] Failed to create default llm.config: {e}")
     with open(args.llm_config, 'r', encoding='utf-8') as f:
         llm_config = _json.load(f)
-    if args.model:
-        llm_config['model'] = args.model
     # 构造一次性的 LLM 客户端实例（按任务传递，避免并行任务相互干扰）
     # 模型名格式：provider/model，例如 bltcy/gpt-3.5-turbo
     provider = None

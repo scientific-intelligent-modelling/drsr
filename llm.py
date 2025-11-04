@@ -237,19 +237,6 @@ class BltClient(LLMClient):
         base_url = base_url or os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1')
         super().__init__(api_key=api_key, model=model, base_url=base_url)
 
-# =====================
-# 单例（全局默认客户端）
-# =====================
-_DEFAULT_CLIENT: LLMClient | None = None
-
-def set_default_client(client: LLMClient) -> None:
-    global _DEFAULT_CLIENT
-    _DEFAULT_CLIENT = client
-
-def get_default_client() -> LLMClient | None:
-    return _DEFAULT_CLIENT
-
-
 def parse_provider_model(model_str: str) -> Tuple[str, str]:
     """
     解析模型字符串为 (provider, model)。

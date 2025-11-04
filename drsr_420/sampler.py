@@ -473,21 +473,10 @@ def _extract_body(sample: str, config: config_lib.Config) -> str:
             break
     
     if find_def_declaration:
-        # for gpt APIs
-        if config.use_api:
-            code = ''
-            for line in lines[func_body_lineno + 1:]:
-                code += line + '\n'
-        
-        # for mixtral
-        else:
-            code = ''
-            indent = '    '
-            for line in lines[func_body_lineno + 1:]:
-                if line[:4] != indent:
-                    line = indent + line
-                code += line + '\n'
-        
+        # 统一处理：直接保留函数定义后的原始缩进与内容
+        code = ''
+        for line in lines[func_body_lineno + 1:]:
+            code += line + '\n'
         return code
     
     return sample
@@ -526,10 +515,8 @@ class LocalLLM(LLM):
         except Exception:
             self._base_dir = "."
 
-        if config.use_api:
-            return self._draw_samples_api(prompt, config)
-        else:
-            return self._draw_samples_local(prompt, config)
+        # 统一走本地批量请求（已使用注入的 llm_client）
+        return self._draw_samples_local(prompt, config)
 
 
     def _draw_samples_local(self, prompt: str, config: config_lib.Config) -> Collection[str]:    

@@ -53,7 +53,6 @@ class Config:
        num_evaluators (int): Number of parallel evaluators
        samples_per_prompt (int): Number of hypotheses per prompt
        evaluate_timeout_seconds (int): Hypothesis evaluation timeout
-       use_api (bool): API usage flag
    """
     experience_buffer: ExperienceBufferConfig = dataclasses.field(default_factory=ExperienceBufferConfig)
     num_samplers: int = 1 
@@ -61,11 +60,7 @@ class Config:
     samples_per_prompt: int = 4
     ####################################################
     # samples_per_prompt: int = 1
-
-
     evaluate_timeout_seconds: int = 30  
-    use_api: bool = False
-    api_model: str = "gpt-3.5-turbo"
     # 新增：统一结果目录（results/{problem}_{ts}）
     results_root: str | None = None
 
