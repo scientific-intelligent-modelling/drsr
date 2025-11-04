@@ -69,7 +69,7 @@ def main(
 
     # Profiler：直接基于 results_root（不再使用 logs 子目录）
     results_root = kwargs.get('results_root', None) or config.results_root
-    llm_api = kwargs.get('llm_api', None)
+    llm_config = kwargs.get('llm_config', None)
     llm_client = kwargs.get('llm_client', None)
     profiler = profile.Profiler(results_root) if results_root else None
 
@@ -91,13 +91,13 @@ def main(
     # 创建DataAnalyzer实例
     # DataAnalyzer 也写入统一结果目录（直接使用 results_root）
     # 将 LLM API 配置传递给 DataAnalyzer（通过模块级常量覆盖，最小侵入）
-    if llm_api and not llm_client:
+    if llm_config and not llm_client:
         try:
             import drsr_420.data_analyse_real as _dar
-            if 'host' in llm_api: _dar.API_HOST = llm_api['host']
-            if 'api_key' in llm_api: _dar.API_KEY = llm_api['api_key']
-            if 'model' in llm_api: _dar.API_MODEL = llm_api['model']
-            if 'max_tokens' in llm_api: _dar.MAX_TOKENS = llm_api['max_tokens']
+            if 'host' in llm_config: _dar.API_HOST = llm_config['host']
+            if 'api_key' in llm_config: _dar.API_KEY = llm_config['api_key']
+            if 'model' in llm_config: _dar.API_MODEL = llm_config['model']
+            if 'max_tokens' in llm_config: _dar.MAX_TOKENS = llm_config['max_tokens']
         except Exception:
             pass
     analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root, llm_client=llm_client)  # 可以自定义参数
@@ -122,7 +122,7 @@ def main(
                                 config = config,
                                 prompt_ctx=prompt_ctx,
                                 llm_client=llm_client,
-                                llm_api=llm_api if not llm_client else None) 
+                                llm_api=None) 
                                 for _ in range(config.num_samplers)]
 
     # This loop can be executed in parallel on remote sampler machines. As each
