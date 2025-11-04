@@ -66,6 +66,12 @@ class Profiler:
             'function': function_str,
             'score': score
         }
+        # 如果存在优化参数，一并写入，便于调试与复现
+        try:
+            if getattr(programs, 'optimized_params', None) is not None:
+                content['params'] = list(programs.optimized_params)
+        except Exception:
+            pass
         path = os.path.join(self._json_dir, f'samples_{sample_order}.json')
         with open(path, 'w') as json_file:
             json.dump(content, json_file)

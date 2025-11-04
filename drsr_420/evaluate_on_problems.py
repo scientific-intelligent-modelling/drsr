@@ -67,4 +67,5 @@ def evaluate(data: dict , equation) -> float:
             # 直接返回数据矩阵，使用X_rounded作为输入数据
             result_data = np.column_stack((X_rounded, outputs_rounded, res_rounded))
             result_data = np.round(result_data, DECIMAL_PLACES)  # 保留小数点位数
-            return -loss, result_data
+            # 兼容：返回分数、结果矩阵、BFGS 优化得到的参数
+            return -loss, result_data, optimized_params

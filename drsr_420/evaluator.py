@@ -144,6 +144,7 @@ class LocalSandbox(Sandbox):
         """
         self._verbose = verbose
         self._numba_accelerate = numba_accelerate
+        self._last_params = None
 
 #################################### 02版本
     def run(self, program: str, function_to_run: str, function_to_evolve: str, 
@@ -180,8 +181,13 @@ class LocalSandbox(Sandbox):
             self._print_evaluation_details(program, results, **kwargs)
         # print(len(results)) #4
         # 这里对results进行处理,先拆开成四份，再把grade和runs_ok放到一起
-        if results and len(results) == 4:
-            grade, res, runs_ok ,remark= results
+        if results and len(results) in (4,5):
+            if len(results) == 5:
+                grade, res, runs_ok, remark, params = results
+                self._last_params = params
+            else:
+                grade, res, runs_ok, remark = results
+                self._last_params = None
             results = (grade, runs_ok,remark)
             # print(f"拆分后的grade: {grade}, res: {res}, runs_ok: {runs_ok}, remark: {remark}")
         else:
@@ -228,7 +234,13 @@ class LocalSandbox(Sandbox):
             exec(program, all_globals_namespace)
             function_to_run = all_globals_namespace[function_to_run]
             evolved_function = all_globals_namespace[function_to_evolve]
-            results, full_res = evaluate_on_problems.evaluate(dataset, evolved_function)
+            eval_out = evaluate_on_problems.evaluate(dataset, evolved_function)
+            # 兼容两种返回格式：旧(分数, 矩阵) / 新(分数, 矩阵, 参数)
+            if isinstance(eval_out, tuple) and len(eval_out) == 3:
+                results, full_res, opt_params = eval_out
+            else:
+                results, full_res = eval_out
+                opt_params = None
             if full_res is not None and hasattr(full_res, "shape") and len(full_res) > 0:
                 import numpy as np
                 # 确定采样数量，最多取20个点或全部（如果数据量小于20）
@@ -243,7 +255,7 @@ class LocalSandbox(Sandbox):
                 return
             
             ########################### 是不是这里加一段‘yes’就可以了？
-            result_queue.put((results, res,True, 'yes'))
+            result_queue.put((results, res, True, 'yes', opt_params))
             
         # if raise any exception, execution is failed
         except Exception as e:
@@ -254,7 +266,7 @@ class LocalSandbox(Sandbox):
             error_msg = f"Execution Error: {e}"
             print('eeeeeeerrrrrrrrrroooooorrrrrrrr')
             print(error_msg)
-            result_queue.put((None, False, error_msg))
+            result_queue.put((None, None, False, error_msg, None))
 
 
 
@@ -358,6 +370,13 @@ class Evaluator:
         根据功能相似性将函数组织到集群(clusters)中
         '''
         if scores_per_test:
+            # 将优化参数保存到函数对象，便于 Profiler 写入 samples JSON
+            try:
+                params = getattr(self._sandbox, '_last_params', None)
+                new_function.optimized_params = params
+            except Exception:
+                pass
+
             self._database.register_program(
                 new_function,
                 island_id,
@@ -375,6 +394,11 @@ class Evaluator:
                 new_function.score = None
                 new_function.sample_time = sample_time
                 new_function.evaluate_time = evaluate_time
+                try:
+                    params = getattr(self._sandbox, '_last_params', None)
+                    new_function.optimized_params = params
+                except Exception:
+                    pass
                 profiler.register_function(new_function)
         
         

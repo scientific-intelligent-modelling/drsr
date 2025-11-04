@@ -45,6 +45,7 @@ class Function:
     global_sample_nums: int | None = None  
     sample_time: float | None = None  
     evaluate_time: float | None = None  
+    optimized_params: list[float] | None = None  
 
     def __str__(self) -> str:
         return_type = f' -> {self.return_type}' if self.return_type else ''
