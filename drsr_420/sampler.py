@@ -81,7 +81,10 @@ class Sampler:
         self._max_sample_nums = max_sample_nums
         self.config = config
 
-# python main.py --problem_name oscillator1 --spec_path ./specs/specification_oscillator1_numpy.txt --log_path ./logs/oscillator1_local
+# 旧示例（已过时）：
+# python main.py --problem_name oscillator1 --spec_path ./specs/specification_oscillator1_numpy.txt
+# 新推荐（动态 CSV 模式）：
+# python main.py --problem_name oscillator1 --data_csv ./data/oscillator1/train.csv --background "..."
     def sample(self, **kwargs):
         """ Continuously gets prompts, samples programs, sends them for analysis. """
         while True:

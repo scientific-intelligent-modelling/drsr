@@ -19,7 +19,6 @@ parser.add_argument('--port', type=int, default=None)
 parser.add_argument('--use_api', type=bool, default=False)
 parser.add_argument('--api_model', type=str, default="gpt-3.5-turbo")
 parser.add_argument('--spec_path', type=str, default=None, help='可选：指定现有 spec 文件路径；不提供则使用 --data_csv 动态渲染')
-parser.add_argument('--log_path', type=str, default=None)
 parser.add_argument('--problem_name', type=str, default="oscillator1")
 parser.add_argument('--run_id', type=int, default=1)
 parser.add_argument('--data_csv', type=str, default=None, help='当未提供 spec_path 时，使用该 CSV（含表头），前 n-1 列为特征，最后一列为因变量')
@@ -37,10 +36,8 @@ if __name__ == '__main__':
     ts = time.strftime('%Y%m%d-%H%M%S')
     exp_name = f"{args.problem_name}_{ts}"
     results_root = os.path.join("results", exp_name)
-    logs_dir = os.path.join(results_root, "logs")
-
-    os.makedirs(logs_dir, exist_ok=True)
-    # 其他产物直接放在实验根目录（不再创建专用子目录）
+    os.makedirs(results_root, exist_ok=True)
+    # 所有产物直接放在实验根目录（不再创建 logs 子目录）
 
     # 将标准输出和错误输出同时写入结果目录，便于统一归档
     class _Tee:
@@ -67,8 +64,7 @@ if __name__ == '__main__':
     sys.stderr = _Tee(sys.stderr, err_fp)
     print(f"[INFO] Results root: {results_root}")
 
-    # 统一覆盖日志目录到 results/{exp}/logs
-    args.log_path = logs_dir
+    # 不再设置独立日志目录
 
     config = config.Config(
         use_api=args.use_api,
@@ -277,7 +273,6 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         config=config,
         max_sample_nums=global_max_sample_num,
         class_config=class_config,
-        # log_dir = 'logs/m1jobs-mixtral-v10',
-        log_dir=args.log_path,
+        results_root=results_root,
         prompt_ctx=prompt_ctx,
     )

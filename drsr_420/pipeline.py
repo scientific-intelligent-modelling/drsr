@@ -67,12 +67,9 @@ def main(
     template = code_manipulation.text_to_program(specification)
     database = buffer.ExperienceBuffer(config.experience_buffer, template, function_to_evolve)
 
-    # get log_dir and create profiler（统一放入 results/{exp}/logs）
-    log_dir = kwargs.get('log_dir', None)
-    if log_dir is None:
-        profiler = None
-    else:
-        profiler = profile.Profiler(log_dir)
+    # Profiler：直接基于 results_root（不再使用 logs 子目录）
+    results_root = kwargs.get('results_root', None) or config.results_root
+    profiler = profile.Profiler(results_root) if results_root else None
 
     evaluators = []
     for _ in range(config.num_evaluators):
@@ -90,8 +87,7 @@ def main(
     ini_score, error_msg ,res= evaluators[0].analyse(initial, island_id=None, version_generated=None, profiler=profiler)
 
     # 创建DataAnalyzer实例
-    # DataAnalyzer 也写入统一结果目录（通过 log_dir 推导 results_root）
-    results_root = os.path.abspath(os.path.join(log_dir, os.pardir)) if log_dir else None
+    # DataAnalyzer 也写入统一结果目录（直接使用 results_root）
     analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root)  # 可以自定义参数
 
     # 分析指定的CSV文件

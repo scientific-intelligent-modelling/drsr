@@ -1,4 +1,8 @@
-# profile the experiment with tensorboard
+"""轻量化实验记录：保留样本 JSON 输出，移除 TensorBoard 依赖。
+
+Profiler 现在直接接收 results_root（实验根目录），
+在 results_root/samples 下输出每个样本的 JSON 文件。
+"""
 
 from __future__ import annotations
 
@@ -7,25 +11,26 @@ from typing import List, Dict
 import logging
 import json
 from drsr_420 import code_manipulation
-from torch.utils.tensorboard import SummaryWriter
+# 移除对 TensorBoard 的依赖，避免安装额外包
 
 
 class Profiler:
     def __init__(
-            self,
-            log_dir: str | None = None,
-            pkl_dir: str | None = None,
-            max_log_nums: int | None = None,
+        self,
+        results_root: str | None = None,
+        pkl_dir: str | None = None,
+        max_log_nums: int | None = None,
     ):
         """
         Args:
-            log_dir     : folder path for tensorboard log files.
+            results_root: 实验根目录（samples JSON 将保存在此目录下的 samples 子目录）。
             pkl_dir     : save the results to a pkl file.
             max_log_nums: stop logging if exceeding max_log_nums.
         """
         logging.getLogger().setLevel(logging.INFO)
-        self._log_dir = log_dir
-        self._json_dir = os.path.join(log_dir, 'samples')
+        self._results_root = results_root or '.'
+        # samples 输出目录：results_root/samples
+        self._json_dir = os.path.join(self._results_root, 'samples')
         os.makedirs(self._json_dir, exist_ok=True)
         self._max_log_nums = max_log_nums
         self._num_samples = 0
@@ -38,8 +43,8 @@ class Profiler:
         self._tot_evaluate_time = 0
         self._all_sampled_functions: Dict[int, code_manipulation.Function] = {}
 
-        if log_dir:
-            self._writer = SummaryWriter(log_dir=log_dir)
+        # 不再创建 TensorBoard 写入器
+        self._writer = None
 
         self._each_sample_best_program_score = []
         self._each_sample_evaluate_success_program_num = []
@@ -48,34 +53,8 @@ class Profiler:
         self._each_sample_tot_evaluate_time = []
 
     def _write_tensorboard(self):
-        if not self._log_dir:
-            return
-
-        self._writer.add_scalar(
-            'Best Score of Function',
-            self._cur_best_program_score,
-            global_step=self._num_samples
-        )
-        self._writer.add_scalars(
-            'Legal/Illegal Function',
-            {
-                'legal function num': self._evaluate_success_program_num,
-                'illegal function num': self._evaluate_failed_program_num
-            },
-            global_step=self._num_samples
-        )
-        self._writer.add_scalars(
-            'Total Sample/Evaluate Time',
-            {'sample time': self._tot_sample_time, 'evaluate time': self._tot_evaluate_time},
-            global_step=self._num_samples
-        )
-        
-        # Log the function_str
-        self._writer.add_text(
-            'Best Function String',
-            self._cur_best_program_str,
-            global_step=self._num_samples
-        )
+        """兼容旧接口：不再写入 TensorBoard。"""
+        return
 
     def _write_json(self, programs: code_manipulation.Function):
         sample_order = programs.global_sample_nums
