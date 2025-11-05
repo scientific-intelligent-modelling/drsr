@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 import numpy as np
 import pandas as pd
 import sys
+import logging as pylogging
 
 from drsr_420 import pipeline
 from drsr_420 import config
@@ -63,6 +64,22 @@ if __name__ == '__main__':
     print(f"[INFO] Results root: {results_root}")
 
     # 不再设置独立日志目录
+
+    # 统一配置 Python 日志格式，包含时间戳，影响 absl 日志输出
+    try:
+        pylogging.basicConfig(
+            level=pylogging.INFO,
+            format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            force=True,
+        )
+    except TypeError:
+        # 兼容旧版 Python（无 force 参数）
+        pylogging.basicConfig(
+            level=pylogging.INFO,
+            format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+        )
 
     config = config.Config(
         results_root=results_root,
@@ -179,13 +196,21 @@ def evaluate(data: dict) -> float:
 
 @equation.evolve
 def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
-    """ Equation to be evolved.
+    """Equation to be evolved.
 
-    Background: {BACKGROUND}
+    Background:
+    {BACKGROUND}
+
+    Variables:
+    - Independents: {FEATURE_DOC}
+    - Dependent: {DEPENDENT}
+
+    Parameters:
+    - params (np.ndarray): Trainable coefficients used by the equation skeleton.
     """
-    # 初始线性骨架（可运行，便于快速启动；LLM 会逐步替换）
     return {LINEAR_SEED}
 '''
+    # 初始线性骨架（可运行，便于快速启动；LLM 会逐步替换）
 
     def _ensure_feature_names(n, names):
         if names is None:
@@ -234,7 +259,7 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
 
     # 将动态渲染的 specification 保存到本次实验目录，便于调试
     try:
-        spec_out_path = os.path.join(results_root, f"spec_{args.problem_name}_dynamic.txt")
+        spec_out_path = os.path.join(results_root, "spec_dynamic.txt")
         with open(spec_out_path, "w", encoding="utf-8") as f:
             f.write(specification)
         print(f"[INFO] Saved dynamic spec to: {spec_out_path}")

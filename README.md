@@ -82,7 +82,7 @@ bash example.sh
 以 `results/oscillator1_20250101-120000/` 为例：
 
 - `run.out`, `run.err`：标准输出/错误输出。
-- `spec_{problem}_dynamic.txt`：本次运行的动态 spec（便于复现）。
+- `spec_dynamic.txt`：本次运行的动态 spec（便于复现）。
 - `experiences.json`：采样过程中的“经验/总结”。
 - `residual_analyze.json`：残差分析结果。
 - `samples/`：每次评分的样本 JSON，形如 `samples_32.json`，包含：
@@ -192,4 +192,3 @@ Variables:
 **论文链接:** https://arxiv.org/abs/2506.04282
 
 **项目地址:** https://github.com/scientific-intelligent-modelling/drsr
-
