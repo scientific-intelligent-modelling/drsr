@@ -22,6 +22,8 @@ parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--run_id', type=int, default=1)
 parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
 parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
+parser.add_argument('--iterations', type=int, default=None, help='搜索迭代轮数；若提供，将按 iterations * num_samplers * samples_per_iteration 计算最大采样数')
+parser.add_argument('--samples_per_iteration', type=int, default=None, help='每轮生成的候选数量（覆盖 config 默认值）')
 args = parser.parse_args()
 
 
@@ -81,9 +83,16 @@ if __name__ == '__main__':
             datefmt='%Y-%m-%d %H:%M:%S',
         )
 
-    config = config.Config(
-        results_root=results_root,
-    )
+    # 允许从命令行覆盖 samples_per_iteration（映射到 Config.samples_per_prompt）
+    if args.samples_per_iteration is not None and args.samples_per_iteration > 0:
+        config = config.Config(
+            results_root=results_root,
+            samples_per_prompt=int(args.samples_per_iteration),
+        )
+    else:
+        config = config.Config(
+            results_root=results_root,
+        )
     # 读取 LLM 配置（仅从 llm.config 文件加载模型名，不再支持命令行覆盖）
     import json as _json
     if not os.path.exists(args.llm_config):
@@ -134,8 +143,15 @@ if __name__ == '__main__':
         print(f"[INFO] LLM client initialized: provider={provider}, model={pure_model}")
     except Exception as e:
         print(f"[WARN] Failed to init LLM client: {e}")
-    # global_max_sample_num = 10000
-    global_max_sample_num = 1000
+    # 计算最大采样数量：优先由 --iterations 推导；否则使用默认 1000
+    if args.iterations is not None and args.iterations > 0:
+        try:
+            global_max_sample_num = int(args.iterations) * int(getattr(config, 'num_samplers', 1)) * int(getattr(config, 'samples_per_prompt', 4))
+        except Exception:
+            global_max_sample_num = int(args.iterations) * 1 * 4
+    else:
+        # global_max_sample_num = 10000
+        global_max_sample_num = 1000
 
 
     # ===============

@@ -52,18 +52,30 @@ LLM 配置（llm.config）
 快速开始
 ------------------------
 
-CSV 需带表头：前 n-1 列为特征，最后一列为因变量。
+CSV 需带表头：前 n-1 列为特征，最后一列为因变量。可用迭代与每轮候选数控制搜索规模。
 
 ```bash
 python3 main.py \
 --problem_name oscillator1 \
 --llm_config llm.config \
---data_csv ./data/oscillator1/train.csv \
---background 'Find the mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force, given data on position, and velocity.' 
+ --data_csv ./data/oscillator1/train.csv \
+ --background 'Find the mathematical function skeleton that represents acceleration in a damped nonlinear oscillator system with driving force, given data on position, and velocity.' 
 
 ```
 
 运行后将在 `results/oscillator1_时间戳/` 下生成所有产物。
+
+可选调参示例：
+
+```bash
+# 迭代轮数与每轮候选数（近似：最大采样数 = iterations * num_samplers * samples_per_iteration）
+python3 main.py \
+  --problem_name oscillator1 \
+  --llm_config llm.config \
+  --data_csv ./data/oscillator1/train.csv \
+  --iterations 50 \
+  --samples_per_iteration 8
+```
 
 
 批量示例（example.sh）
@@ -131,6 +143,8 @@ PY2
 
 - `llm.config`：LLM 访问与采样参数（host/api_key/model/max_tokens/temperature/top_p）。
 - `drsr_420/config.py`：采样与评估资源配置（`samples_per_prompt`、`evaluate_timeout_seconds`、并行数等）。
+- 运行时可通过 `--samples_per_iteration` 覆盖每轮候选数量（内部映射为 `samples_per_prompt`）。
+- 运行时可通过 `--iterations` 控制“迭代轮数”（最大采样数 = iterations × num_samplers × samples_per_iteration）。
 - `drsr_420/evaluate_on_problems.py`：BFGS 拟合与指标（返回 `(score, result_matrix, optimized_params)`）。
 - `drsr_420/prompt_config.py` 与 `PromptContext`：采样提示词的模板与动态渲染（变量名、背景）。
 
