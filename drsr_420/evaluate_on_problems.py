@@ -3,7 +3,7 @@ MAX_NPARAMS = 10
 params = [1.0]*MAX_NPARAMS
 from scipy.optimize import minimize
 
-# 全局变量定义保留小数点的位数
+ # 全局变量定义保留小数点的位数
 DECIMAL_PLACES = 3
 
 def multi_start_bfgs(loss_func, n_starts=5, n_params=10):

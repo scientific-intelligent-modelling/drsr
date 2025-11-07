@@ -16,27 +16,29 @@ import llm as llm_mod
 
 
 parser = ArgumentParser()
-parser.add_argument('--port', type=int, default=None)
 parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON）')
 parser.add_argument('--problem_name', type=str, default="problem")
-parser.add_argument('--run_id', type=int, default=1)
 parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
 parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
 parser.add_argument('--iterations', type=int, default=None, help='搜索迭代轮数；若提供，将按 iterations * num_samplers * samples_per_iteration 计算最大采样数')
 parser.add_argument('--samples_per_iteration', type=int, default=None, help='每轮生成的候选数量（覆盖 config 默认值）')
+parser.add_argument('--experiment_dir', type=str, default=None, help='实验目录（可为绝对/相对路径）。如提供，将直接使用此目录')
+
 args = parser.parse_args()
-
-
-
 
 if __name__ == '__main__':
     # Load config and parameters
     class_config = config.ClassConfig(llm_class=sampler.LocalLLM, sandbox_class=evaluator.LocalSandbox)
 
-    # 构建统一的结果目录：results/{problem_name}_{timestamp}
-    ts = time.strftime('%Y%m%d-%H%M%S')
-    exp_name = f"{args.problem_name}_{ts}"
-    results_root = os.path.join("results", exp_name)
+    # 构建统一的结果目录（新方案）：
+    # 优先使用 --experiment_root；否则使用 {experiments_base}/{experiment_name}
+    # 默认 experiments_base = 'experiments'，experiment_name = '{problem_name}_{timestamp}'
+    if args.experiment_dir:
+        results_root = args.experiment_dir
+    else:
+        ts = time.strftime('%Y%m%d-%H%M%S')
+        exp_name = f"{args.problem_name}_{ts}"
+        results_root = os.path.join('experiments', exp_name)
     os.makedirs(results_root, exist_ok=True)
     # 所有产物直接放在实验根目录（不再创建 logs 子目录）
 
