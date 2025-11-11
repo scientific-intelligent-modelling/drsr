@@ -23,6 +23,7 @@ parser.add_argument('--experiment_dir', type=str, default=None, help='实验目�
 parser.add_argument('--niterations', type=int, default=10, help='搜索迭代轮数；若提供，将按 niterations * num_samplers * samples_per_iteration 计算最大采样数')
 parser.add_argument('--timeout_in_seconds', type=int, default=None, help='总超时时间（秒）。到达即停止训练（即便未达迭代数）')
 parser.add_argument('--seed', type=int, default=None, help='随机种子（影响 Python 与 NumPy 的随机性）')
+parser.add_argument('--num_islands', type=int, default=None, help='经验缓冲的岛屿数量（覆盖默认 10）')
 
 # 算法私有参数
 parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON 格式）')
@@ -108,16 +109,23 @@ if __name__ == '__main__':
         )
 
     # 允许从命令行覆盖 samples_per_iteration（映射到 Config.samples_per_prompt）
+    # 根据命令行构造 ExperienceBuffer 配置（允许覆盖岛屿数量）
+    eb_cfg = config.ExperienceBufferConfig(
+        num_islands=int(args.num_islands) if args.num_islands and args.num_islands > 0 else config.ExperienceBufferConfig().num_islands
+    )
+
     if args.samples_per_iteration is not None and args.samples_per_iteration > 0:
         config = config.Config(
             results_root=results_root,
             samples_per_prompt=int(args.samples_per_iteration),
             wall_time_limit_seconds=wall_limit_seconds,
+            experience_buffer=eb_cfg,
         )
     else:
         config = config.Config(
             results_root=results_root,
             wall_time_limit_seconds=wall_limit_seconds,
+            experience_buffer=eb_cfg,
         )
     # 读取 LLM 配置（仅从 llm.config 文件加载模型名，不再支持命令行覆盖）
     import json as _json
