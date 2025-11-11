@@ -73,6 +73,8 @@ def main(
     llm_client = kwargs.get('llm_client', None)
     profiler = profile.Profiler(results_root) if results_root else None
 
+    seed = kwargs.get('seed', None)
+
     evaluators = []
     for _ in range(config.num_evaluators):
         evaluators.append(evaluator.Evaluator(
@@ -100,7 +102,7 @@ def main(
             if 'max_tokens' in llm_config: _dar.MAX_TOKENS = llm_config['max_tokens']
         except Exception:
             pass
-    analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root, llm_client=llm_client)  # 可以自定义参数
+    analyzer = data_analyse_real.DataAnalyzer(timeout=600, base_dir=results_root, llm_client=llm_client, seed=seed)  # 可以自定义参数
 
     # 分析指定的CSV文件
     result = analyzer.analyze(

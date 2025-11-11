@@ -20,14 +20,15 @@ parser = ArgumentParser()
 parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
 parser.add_argument('--experiment_dir', type=str, default=None, help='实验目录（可为绝对/相对路径）。如提供，将直接使用此目录')
-parser.add_argument('--iterations', type=int, default=None, help='搜索迭代轮数；若提供，将按 iterations * num_samplers * samples_per_iteration 计算最大采样数')
+parser.add_argument('--niterations', type=int, default=10, help='搜索迭代轮数；若提供，将按 niterations * num_samplers * samples_per_iteration 计算最大采样数')
+parser.add_argument('--timeout_in_seconds', type=int, default=None, help='总超时时间（秒）。到达即停止训练（即便未达迭代数）')
+parser.add_argument('--seed', type=int, default=None, help='随机种子（影响 Python 与 NumPy 的随机性）')
 
 # 算法私有参数
 parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON 格式）')
 parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
 parser.add_argument('--samples_per_iteration', type=int, default=None, help='每轮生成的候选数量（覆盖 config 默认值）')
 
-parser.add_argument('--time_limit_hours', type=float, default=None, help='实验总时长上限（小时）。例如 2 表示 2 小时')
 
 args = parser.parse_args()
 
@@ -36,7 +37,20 @@ if __name__ == '__main__':
     class_config = config.ClassConfig(llm_class=sampler.LocalLLM, sandbox_class=evaluator.LocalSandbox)
 
     # 计算实验总时长（秒）
-    wall_limit_seconds = int(args.time_limit_hours * 3600) if args.time_limit_hours and args.time_limit_hours > 0 else None
+    wall_limit_seconds = int(args.timeout_in_seconds) if args.timeout_in_seconds and args.timeout_in_seconds > 0 else None
+
+    # 设定随机种子（Python/NumPy）
+    try:
+        if args.seed is not None:
+            import random as _random
+            import numpy as _np
+            os.environ["PYTHONHASHSEED"] = str(args.seed)
+            _random.seed(args.seed)
+            _np.random.seed(args.seed)
+            print(f"[INFO] Random seed set: {args.seed}")
+    except Exception as _e:
+        print(f"[WARN] Failed to set seed: {_e}")
+
 
     # 构建统一的结果目录（新方案）：
     # 优先使用 --experiment_root；否则使用 {experiments_base}/{experiment_name}
@@ -176,12 +190,12 @@ if __name__ == '__main__':
         print(f"[INFO] LLM client initialized: provider={provider}, model={pure_model}")
     except Exception as e:
         print(f"[WARN] Failed to init LLM client: {e}")
-    # 计算最大采样数量：优先由 --iterations 推导；否则使用默认 1000
-    if args.iterations is not None and args.iterations > 0:
+    # 计算最大采样数量：优先由 --niterations 推导；否则使用默认 1000
+    if args.niterations is not None and args.niterations > 0:
         try:
-            global_max_sample_num = int(args.iterations) * int(getattr(config, 'num_samplers', 1)) * int(getattr(config, 'samples_per_prompt', 4))
+            global_max_sample_num = int(args.niterations) * int(getattr(config, 'num_samplers', 1)) * int(getattr(config, 'samples_per_prompt', 4))
         except Exception:
-            global_max_sample_num = int(args.iterations) * 1 * 4
+            global_max_sample_num = int(args.niterations) * 1 * 4
     else:
         # global_max_sample_num = 10000
         global_max_sample_num = 1000
@@ -362,4 +376,5 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         prompt_ctx=prompt_ctx,
         llm_client=client,
         llm_config=llm_config,
+        seed=args.seed,
     )

@@ -24,7 +24,7 @@ class DataAnalyzer:
     
     def __init__(self, api_url: str = f"http://127.0.0.1:{Port}/completions", timeout: int = 300,
                  decimal_places: int = None, sample_size: int = None, base_dir: str | None = None,
-                 llm_client: object | None = None):
+                 llm_client: object | None = None, seed: int | None = None):
         """
         初始化数据分析器
         
@@ -38,6 +38,7 @@ class DataAnalyzer:
         self.timeout = timeout
         self.base_dir = base_dir or "."
         self.llm_client = llm_client
+        self.seed = seed
         
         # 如果传入了自定义值，则覆盖默认值
         if decimal_places is not None:
@@ -67,7 +68,7 @@ class DataAnalyzer:
             
             # 如果数据行数超过采样数量，则进行随机采样
             if len(df) > self.__class__.SAMPLE_SIZE and self.__class__.SAMPLE_SIZE > 0:
-                df = df.sample(n=self.__class__.SAMPLE_SIZE, random_state=42)  # 使用固定随机种子以保持结果可复现
+                df = df.sample(n=self.__class__.SAMPLE_SIZE, random_state=self.seed)  # 使用固定随机种子以保持结果可复现
                 print(f"已从{csv_file_path}随机采样{self.__class__.SAMPLE_SIZE}行数据")
             
             # 转换为字符串
@@ -110,10 +111,10 @@ class DataAnalyzer:
             # 随机采样
             rows_count = combined_data.shape[0]
             if rows_count > self.__class__.SAMPLE_SIZE and self.__class__.SAMPLE_SIZE > 0:
-                # 设置随机种子以保持结果可复现
-                np.random.seed(42)
+                # 使用独立 RNG 保持可复现，避免污染全局随机态
+                rng = np.random.default_rng(self.seed)
                 # 随机选择行索引
-                indices = np.random.choice(rows_count, self.__class__.SAMPLE_SIZE, replace=False)
+                indices = rng.choice(rows_count, self.__class__.SAMPLE_SIZE, replace=False)
                 combined_data = combined_data[indices]
                 print(f"已从数据集随机采样{self.__class__.SAMPLE_SIZE}行数据")
             
