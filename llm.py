@@ -2,7 +2,7 @@ import os
 """统一的 LLM 客户端封装。
 
 提供商/模型命名规则：'provider/model'，provider 大小写不敏感，model 保留大小写与路径。
-当前支持：deepseek、siliconflow、ollama。
+当前支持：deepseek、siliconflow、ollama、blt、cstcloud（科技云）。
 """
 import requests
 from typing import List, Dict, Tuple
@@ -73,6 +73,8 @@ class LLMClient:
                 return 'blt'
             if 'ollama' in url or 'localhost' in url:
                 return 'ollama'
+            if 'cstcloud' in url or 'uni-api.cstcloud.cn' in url:
+                return 'cstcloud'
         except Exception:
             pass
         return 'llm'
@@ -221,6 +223,16 @@ class SiliconflowClient(LLMClient):
     def __init__(self, api_key: str, model: str, base_url: str = "https://api.siliconflow.cn/v1"):
         super().__init__(api_key=api_key, model=model, base_url=base_url)
 
+class CSTCloudClient(LLMClient):
+    """CSTCloud（科技云）提供商，OpenAI Chat Completions 兼容接口。
+
+    默认基址：https://uni-api.cstcloud.cn/v1
+    使用示例：model="CSTCloud/gpt-oss-120b" 或 "CSTCloud/qwen3:235b"
+    建议环境变量：CSTCLOUD_API_KEY
+    """
+    def __init__(self, api_key: str, model: str, base_url: str = "https://uni-api.cstcloud.cn/v1"):
+        super().__init__(api_key=api_key, model=model, base_url=base_url)
+
 # 兼容旧拼写，避免历史引用报错
 SliconflowClient = SiliconflowClient
 
@@ -248,7 +260,7 @@ def parse_provider_model(model_str: str) -> Tuple[str, str]:
     - "ollama/llama3.1:8b" -> ("ollama", "llama3.1:8b")
     """
     if not isinstance(model_str, str) or '/' not in model_str:
-        raise ValueError("模型名格式无效，需为 'provider/model'，如 'deepseek/deepseek-chat'")
+        raise ValueError("缺少模型提供商：请使用 'provider/model' 格式，例如 'CSTCloud/gpt-oss-120b'")
     provider, model = model_str.split('/', 1)
     return provider.lower(), model
 
@@ -265,8 +277,29 @@ class ClientFactory:
             raise ValueError("缺少必要字段: model")
 
         provider, model = parse_provider_model(config['model'])
-        api_key = config.get('api_key')
+        api_key_cfg = config.get('api_key')
         base_url = config.get('base_url')
+
+        # api_key 支持：
+        # 1) 字符串（兼容旧格式）
+        # 2) 字典：可按 provider 或完整 model（'provider/model'）配置不同 key
+        api_key = None
+        if isinstance(api_key_cfg, dict):
+            def _get_case_insensitive(d: dict, k: str):
+                for kk, vv in d.items():
+                    try:
+                        if str(kk).lower() == str(k).lower():
+                            return vv
+                    except Exception:
+                        pass
+                return None
+            # 优先匹配完整模型名，其次按提供商名
+            api_key = _get_case_insensitive(api_key_cfg, config.get('model', '')) or _get_case_insensitive(api_key_cfg, provider)
+        elif isinstance(api_key_cfg, str):
+            api_key = api_key_cfg
+        else:
+            api_key = None
+
 
         # 设置默认 base_url
         if provider == 'deepseek':
@@ -281,8 +314,11 @@ class ClientFactory:
         elif provider in ('blt', 'bltcy', 'plato'):
             # 优先使用传入 api_key，否则读环境变量 BLT_API_KEY
             return BltClient(api_key=api_key or os.getenv('BLT_API_KEY', ''), model=model, base_url=base_url or os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1'))
+        elif provider in ('cstcloud', 'cst', 'cst-cloud', 'keji', 'keji-yun'):
+            # 科技云：默认基址 https://uni-api.cstcloud.cn/v1
+            return CSTCloudClient(api_key=api_key or os.getenv('CSTCLOUD_API_KEY', ''), model=model, base_url=base_url or 'https://uni-api.cstcloud.cn/v1')
         else:
-            raise ValueError(f"不支持的提供商: {provider}，请使用 'deepseek'、'siliconflow'、'blt' 或 'ollama'")
+            raise ValueError(f"不支持的提供商: {provider}，请使用 'deepseek'、'siliconflow'、'blt'、'cstcloud' 或 'ollama'")
         
 
 

@@ -16,19 +16,27 @@ import llm as llm_mod
 
 
 parser = ArgumentParser()
-parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON）')
+# 共有参数
 parser.add_argument('--problem_name', type=str, default="problem")
 parser.add_argument('--data_csv', type=str, required=True, help='含表头的 CSV，前 n-1 列为特征，最后一列为因变量')
-parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
-parser.add_argument('--iterations', type=int, default=None, help='搜索迭代轮数；若提供，将按 iterations * num_samplers * samples_per_iteration 计算最大采样数')
-parser.add_argument('--samples_per_iteration', type=int, default=None, help='每轮生成的候选数量（覆盖 config 默认值）')
 parser.add_argument('--experiment_dir', type=str, default=None, help='实验目录（可为绝对/相对路径）。如提供，将直接使用此目录')
+parser.add_argument('--iterations', type=int, default=None, help='搜索迭代轮数；若提供，将按 iterations * num_samplers * samples_per_iteration 计算最大采样数')
+
+# 算法私有参数
+parser.add_argument('--llm_config', type=str, default='llm.config', help='LLM 配置文件路径（JSON 格式）')
+parser.add_argument('--background', type=str, default=None, help='背景知识（可选）')
+parser.add_argument('--samples_per_iteration', type=int, default=None, help='每轮生成的候选数量（覆盖 config 默认值）')
+
+parser.add_argument('--time_limit_hours', type=float, default=None, help='实验总时长上限（小时）。例如 2 表示 2 小时')
 
 args = parser.parse_args()
 
 if __name__ == '__main__':
     # Load config and parameters
     class_config = config.ClassConfig(llm_class=sampler.LocalLLM, sandbox_class=evaluator.LocalSandbox)
+
+    # 计算实验总时长（秒）
+    wall_limit_seconds = int(args.time_limit_hours * 3600) if args.time_limit_hours and args.time_limit_hours > 0 else None
 
     # 构建统一的结果目录（新方案）：
     # 优先使用 --experiment_root；否则使用 {experiments_base}/{experiment_name}
@@ -90,10 +98,12 @@ if __name__ == '__main__':
         config = config.Config(
             results_root=results_root,
             samples_per_prompt=int(args.samples_per_iteration),
+            wall_time_limit_seconds=wall_limit_seconds,
         )
     else:
         config = config.Config(
             results_root=results_root,
+            wall_time_limit_seconds=wall_limit_seconds,
         )
     # 读取 LLM 配置（仅从 llm.config 文件加载模型名，不再支持命令行覆盖）
     import json as _json
@@ -101,9 +111,15 @@ if __name__ == '__main__':
         try:
             with open(args.llm_config, 'w', encoding='utf-8') as f:
                 _json.dump({
-                    'host': 'api.bltcy.ai',
-                    'api_key': 'xxx',
-                    'model': 'bltcy/gpt-3.5-turbo',
+                    # api_key 支持按提供商或完整模型配置不同 key；可留空
+                    'api_key': {
+                        'cstcloud': '',
+                        'deepseek': '',
+                        'siliconflow': '',
+                        'blt': ''
+                    },
+                    # 强制要求带提供商前缀
+                    'model': 'CSTCloud/gpt-oss-120b',
                     'max_tokens': 1024,
                     'temperature': 0.6,
                     'top_p': 0.3
@@ -114,14 +130,27 @@ if __name__ == '__main__':
     with open(args.llm_config, 'r', encoding='utf-8') as f:
         llm_config = _json.load(f)
     # 构造一次性的 LLM 客户端实例（按任务传递，避免并行任务相互干扰）
-    # 模型名格式：provider/model，例如 bltcy/gpt-3.5-turbo
-    provider = None
+    # 模型名格式：provider/model，例如 CSTCloud/gpt-oss-120b
     model_name = llm_config.get('model')
-    if model_name and '/' in model_name:
-        provider, pure_model = model_name.split('/', 1)
-    else:
-        provider, pure_model = 'bltcy', model_name
-    api_key = llm_config.get('api_key', '')
+    if not model_name or '/' not in model_name:
+        raise ValueError("缺少模型提供商：请在 llm.config 的 model 字段使用 'provider/model' 格式，例如 'CSTCloud/gpt-oss-120b'")
+    provider, pure_model = llm_mod.parse_provider_model(model_name)
+
+    # 解析 api_key：支持字符串与字典（按 provider 或完整 model）
+    api_key_cfg = llm_config.get('api_key', '')
+    api_key = ''
+    if isinstance(api_key_cfg, dict):
+        def _get_case_insensitive(d: dict, k: str):
+            for kk, vv in d.items():
+                try:
+                    if str(kk).lower() == str(k).lower():
+                        return vv
+                except Exception:
+                    pass
+            return None
+        api_key = _get_case_insensitive(api_key_cfg, model_name) or _get_case_insensitive(api_key_cfg, provider) or ''
+    elif isinstance(api_key_cfg, str):
+        api_key = api_key_cfg
     provider = (provider or 'bltcy').lower()
     client = None
     try:
@@ -133,6 +162,8 @@ if __name__ == '__main__':
             client = llm_mod.SiliconflowClient(api_key=api_key, model=pure_model)
         elif provider in ('ollama', 'local'):
             client = llm_mod.OllamaClient(api_key=api_key, model=pure_model)
+        elif provider in ('cstcloud', 'cst', 'cst-cloud', 'keji', 'keji-yun'):
+            client = llm_mod.CSTCloudClient(api_key=api_key, model=pure_model)
         else:
             # 默认走 BLT 网关（OpenAI 兼容）
             client = llm_mod.BltClient(api_key=api_key, model=pure_model)

@@ -103,7 +103,14 @@ class Sampler:
 # python main.py --problem_name oscillator1 --data_csv ./data/oscillator1/train.csv --background "..."
     def sample(self, **kwargs):
         """ Continuously gets prompts, samples programs, sends them for analysis. """
+        start_time = time.time()
+        wall_limit = getattr(self.config, 'wall_time_limit_seconds', None)
         while True:
+            # 基于总时长的退出：达到上限后优雅停止
+            if wall_limit is not None and (time.time() - start_time) >= wall_limit:
+                print(f'到达实验时长上限：{wall_limit} 秒，停止采样。')
+                break
+
             # stop the search process if hit global max sample nums
             if self._max_sample_nums and self.__class__._global_samples_nums >= self._max_sample_nums:
                 break

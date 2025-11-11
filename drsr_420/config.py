@@ -63,6 +63,8 @@ class Config:
     evaluate_timeout_seconds: int = 30  
     # 新增：统一结果目录（results/{problem}_{ts}）
     results_root: str | None = None
+    # 实验总时长上限（秒）；None 表示不限制
+    wall_time_limit_seconds: int | None = None
 
 
 @dataclasses.dataclass()
