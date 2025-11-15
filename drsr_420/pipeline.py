@@ -71,7 +71,11 @@ def main(
     results_root = kwargs.get('results_root', None) or config.results_root
     llm_config = kwargs.get('llm_config', None)
     llm_client = kwargs.get('llm_client', None)
-    profiler = profile.Profiler(results_root) if results_root else None
+    # Profiler：记录样本与中间结果（包括 Top-K、历史最优与逐 iteration 进度）
+    profiler = profile.Profiler(
+        results_root,
+        samples_per_iteration=config.samples_per_prompt,
+    ) if results_root else None
 
     seed = kwargs.get('seed', None)
 
