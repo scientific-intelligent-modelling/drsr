@@ -42,6 +42,8 @@ class Profiler:
         self._tot_sample_time = 0
         self._tot_evaluate_time = 0
         self._all_sampled_functions: Dict[int, code_manipulation.Function] = {}
+        # 仅保留 samples 目录下分数最高的前 K 个样本 JSON
+        self._keep_top_k_samples: int = 10
 
         # 不再创建 TensorBoard 写入器
         self._writer = None
@@ -57,24 +59,17 @@ class Profiler:
         return
 
     def _write_json(self, programs: code_manipulation.Function):
-        sample_order = programs.global_sample_nums
-        sample_order = sample_order if sample_order is not None else 0
-        function_str = str(programs)
-        score = programs.score
-        content = {
-            'sample_order': sample_order,
-            'function': function_str,
-            'score': score
-        }
-        # 如果存在优化参数，一并写入，便于调试与复现
+        """
+        写入 JSON 的逻辑改为：
+        - 不再单独写当前样本文件
+        - 而是基于 _all_sampled_functions 重新计算前 K 个最优样本，
+          统一以 topXX_ 前缀写入，保证文件名与排名一致
+        """
         try:
-            if getattr(programs, 'optimized_params', None) is not None:
-                content['params'] = list(programs.optimized_params)
+            self._prune_samples_dir_topk()
         except Exception:
+            # 精简/重写失败不影响主流程
             pass
-        path = os.path.join(self._json_dir, f'samples_{sample_order}.json')
-        with open(path, 'w') as json_file:
-            json.dump(content, json_file)
 
     def register_function(self, programs: code_manipulation.Function):
         if self._max_log_nums is not None and self._num_samples >= self._max_log_nums:
@@ -120,3 +115,65 @@ class Profiler:
             self._tot_sample_time += sample_time
         if evaluate_time:
             self._tot_evaluate_time += evaluate_time
+
+    def _prune_samples_dir_topk(self):
+        """
+        仅保留分数最高的前 K 个样本，并按排名重写文件：
+        - 文件名形如：top01_samples_{sample_order}.json
+        - JSON 字段顺序：sample_order -> score -> function -> params
+        """
+        # 1. 收集所有已有样本的分数
+        entries = []
+        for order, func in self._all_sampled_functions.items():
+            try:
+                s = getattr(func, 'score', None)
+                if isinstance(s, (int, float)):
+                    entries.append((order, float(s), func))
+            except Exception:
+                continue
+        if not entries:
+            return
+
+        # 2. 按分数从高到低排序，取前 K 个
+        entries.sort(key=lambda x: x[1], reverse=True)
+        top_k = entries[: max(1, int(self._keep_top_k_samples))]
+
+        # 3. 清空 samples 目录下旧的 JSON 文件
+        try:
+            for name in os.listdir(self._json_dir):
+                if not name.endswith('.json'):
+                    continue
+                try:
+                    os.remove(os.path.join(self._json_dir, name))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # 4. 重新按排名写入 topXX_ 前缀的文件
+        for rank, (order, score, func) in enumerate(top_k, start=1):
+            sample_order = order if order is not None else 0
+            function_str = str(func)
+
+            # 按用户需求的字段顺序组织内容：
+            # 先是 sample_order，然后是 score，然后是方程（function），最后是参数
+            content = {
+                'sample_order': sample_order,
+                'score': score,
+                'function': function_str,
+            }
+            # 如果存在优化参数，则追加 params
+            try:
+                if getattr(func, 'optimized_params', None) is not None:
+                    content['params'] = list(func.optimized_params)
+            except Exception:
+                pass
+
+            file_name = f'top{rank:02d}_samples_{sample_order}.json'
+            path = os.path.join(self._json_dir, file_name)
+            try:
+                with open(path, 'w', encoding='utf-8') as json_file:
+                    json.dump(content, json_file, ensure_ascii=False, indent=2)
+            except Exception:
+                # 单个样本写失败不影响其它样本
+                continue
