@@ -364,12 +364,17 @@ class Sampler:
                     new__question = pc.analysis_question_none.format(
                         dependent=pc.dependent_name_in_prompt,
                         problem=pc.problem_name_in_prompt,
-                        error=error_for_sample[i]
+                        error=error_for_sample[i],
+                        budget_sentence=(
+                            "Treat this failure as a negative example rather than a requirement to satisfy. "
+                            "If the error is about parameter length or indexing, do not solve it by asking for more parameters. "
+                            "Instead, reduce parameter usage so the equation fits the evaluator's available parameter budget.\n"
+                        ),
                     )
             i += 1
 
             analysis_prompt = pc.analysis_conversation_template.format(
-                prompt=prompt,
+                prompt=prompt.code if hasattr(prompt, "code") else prompt,
                 sample=sample_each,
                 question=new__question,
             )
@@ -636,30 +641,42 @@ class LocalLLM(LLM):
 
 
                 
-                # 准备存储筛选后的各类经验
+                # 准备存储筛选后的各类经验。
+                # 规则：
+                # - None：始终参与注入，最多 3 条；
+                # - Good / Bad：各自独立以 0.5 概率参与注入，最多 2 条；
+                # - 经验筛选范围与原逻辑保持一致。
                 filtered_experiences = {"None": [], "Good": [], "Bad": []}
+                optional_category_probability = 0.5
+                category_max_samples = {"None": 3, "Good": 2, "Bad": 2}
                 
                 # 根据当前 sample_order 选择合适的经验
-                # for category in ["None", "Good", "Bad"]:
-                for category in ["None"]:
-                    if category in experiences and experiences[category]:
-                        # 筛选符合条件的经验
-                        if current_sample_order <= 50:
-                            # sample_order < 50 时，不限制经验的 sample_order
-                            filtered_category = experiences[category]
-                        else:
-                            # sample_order > 50 时，只选择 sample_order 在当前值的 0.5~1 倍范围内的经验
-                            min_order = current_sample_order * 0.7
-                            max_order = current_sample_order
-                            filtered_category = [
-                                exp for exp in experiences[category] 
-                                if "sample_order" in exp and min_order <= exp["sample_order"] <= max_order
-                            ]
-                        
-                        # 随机选择最多3个经验
-                        if filtered_category:
-                            selected = random.sample(filtered_category, min(3, len(filtered_category)))
-                            filtered_experiences[category] = selected
+                for category in ["None", "Good", "Bad"]:
+                    if category not in experiences or not experiences[category]:
+                        continue
+
+                    # None 类经验始终注入；Good / Bad 先按概率决定是否注入。
+                    if category != "None" and random.random() >= optional_category_probability:
+                        continue
+
+                    # 筛选符合条件的经验
+                    if current_sample_order <= 50:
+                        # sample_order < 50 时，不限制经验的 sample_order
+                        filtered_category = experiences[category]
+                    else:
+                        # sample_order > 50 时，只选择 sample_order 在当前值的 0.7~1 倍范围内的经验
+                        min_order = current_sample_order * 0.7
+                        max_order = current_sample_order
+                        filtered_category = [
+                            exp for exp in experiences[category] 
+                            if "sample_order" in exp and min_order <= exp["sample_order"] <= max_order
+                        ]
+                    
+                    # 按类别上限随机抽样
+                    if filtered_category:
+                        max_selected = category_max_samples[category]
+                        selected = random.sample(filtered_category, min(max_selected, len(filtered_category)))
+                        filtered_experiences[category] = selected
                 
                 # 合并所有类别的经验
                 all_selected_experiences = []
@@ -708,7 +725,7 @@ class LocalLLM(LLM):
                     content = content_with_lib
 
             #有p的几率进入以下代码：
-            p = 1.0  # 设置执行概率为50%，你可以根据需要调整这个值
+            p = 0.5  # 设置执行概率为50%，你可以根据需要调整这个值
             
             if random.random() < p and os.path.exists(experience_file):
                 print("use residual_analyze: True")
