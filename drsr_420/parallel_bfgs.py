@@ -24,7 +24,7 @@ def _run_single_bfgs(loss_func, n_params, seed):
     )
     return result
 
-def parallel_multi_start_bfgs(loss_func, n_starts=5, n_params=10):
+def parallel_multi_start_bfgs(loss_func, n_starts=10, n_params=10):
     """
     Runs BFGS from multiple random starting points in parallel.
     """

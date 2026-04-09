@@ -372,6 +372,7 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         dependent_name=y_name,
         problem_name=args.problem_name,
         background=background,
+        max_params=10,
     )
 
     pipeline.main(

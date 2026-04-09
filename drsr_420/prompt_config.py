@@ -46,12 +46,14 @@ analysis_question_bad = (
 )
 
 analysis_question_none = (
-    "The optimized function skeleton you just answered failed with error: {error}, What lessons can you draw from it?\n"
+    "The optimized function skeleton you just answered failed with error: {error}. What lessons can you draw from it?\n"
+    "{budget_sentence}"
     "STRICTLY follow these rules:\n"
     "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent} in {problem}, I need ...\"\n"
     "2. Address the SPECIFIC error: {error}\n"
-    "3. Identify ONE crucial improvement point\n"
-    "4. You need to make your answer as concise as possible\n"
+    "3. Treat this failed sample as a negative example to avoid, not as a target requirement to satisfy\n"
+    "4. Identify ONE concrete change that would prevent the next sample from repeating this failure\n"
+    "5. You need to make your answer as concise as possible\n"
 )
 
 # 经验注入区块标题与条目前缀
@@ -156,6 +158,7 @@ class PromptContext:
         background=None,
         feature_descriptions=None,
         target_description=None,
+        max_params=None,
     ):
         self.n_features = n_features
         self.feature_names = feature_names
@@ -164,6 +167,7 @@ class PromptContext:
         self.background = background
         self.feature_descriptions = feature_descriptions
         self.target_description = target_description
+        self.max_params = max_params
 
     # 规范化后的属性
     @property
@@ -198,6 +202,14 @@ class PromptContext:
         if desc and str(desc).strip():
             return f"{self.dependent} ({str(desc).strip()})"
         return self.dependent
+
+    @property
+    def max_param_count(self):
+        try:
+            value = int(self.max_params)
+        except Exception:
+            return None
+        return value if value > 0 else None
 
     def _feature_phrase(self):
         items = []
@@ -244,8 +256,28 @@ class PromptContext:
         if quality == "Bad":
             return analysis_question_bad.format(dependent=self.dependent, problem=self.problem)
         if quality == "None":
+            max_params = self.max_param_count
+            if max_params is None:
+                budget_sentence = (
+                    "Treat this failure as a negative example rather than a requirement to satisfy. "
+                    "If the error is about parameter length or indexing, do not solve it by asking for more parameters. "
+                    "Instead, reduce parameter usage so the equation fits the evaluator's available parameter budget.\n"
+                )
+            else:
+                max_index = max_params - 1
+                budget_sentence = (
+                    f"The current evaluator passes exactly {max_params} trainable parameters, "
+                    f"indexed from params[0] to params[{max_index}]. "
+                    "Treat this failure as a negative example rather than a requirement to satisfy. "
+                    "If the error is about parameter length or indexing, do not solve it by asking for more parameters. "
+                    f"Instead, rewrite the equation so it stays within params[0]..params[{max_index}] "
+                    f"and avoid any explicit minimum-length checks above {max_params}.\n"
+                )
             return analysis_question_none.format(
-                dependent=self.dependent, problem=self.problem, error=str(error or "")
+                dependent=self.dependent,
+                problem=self.problem,
+                error=str(error or ""),
+                budget_sentence=budget_sentence,
             )
         raise ValueError(f"unknown quality: {quality}")
 
