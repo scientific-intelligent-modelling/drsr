@@ -16,7 +16,9 @@ independent_name_in_prompt = 'x0 and x1'
 # 采样阶段：说明性指令（拼接在代码 prompt 前）
 instruction_prompt = (
     "You are a helpful assistant tasked with discovering mathematical function structures for scientific systems. "
-    "Complete the 'equation' function below, considering the physical meaning and relationships of inputs.\n\n"
+    "Complete the 'equation' function below, considering the physical meaning and relationships of inputs. "
+    "Write the final formula as a single-line return statement only. "
+    "Example: return params[0] + params[1] * x0 + params[2] * x1\n\n"
 )
 
 # 采样后经验对话整体模板（包含上下文与追问占位）
