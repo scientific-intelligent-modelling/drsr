@@ -227,11 +227,9 @@ if __name__ == '__main__':
     # 工具：渲染 specification（NumPy 版）
     # ===============
     DEFAULT_BACKGROUND = "The physical properties of this equation are unknown and need to be analyzed based on experience."
-    DEFAULT_PROBLEM = args.problem_name
-
     SPEC_TEMPLATE_NUMPY = '''\
 """
-Find the mathematical function skeleton that represents {PROBLEM}.
+Find the mathematical function skeleton that fits the data.
 
 Background:
 {BACKGROUND}
@@ -294,7 +292,6 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         feats = _ensure_feature_names(n_features, feature_names)
         dep = (dependent_name or 'y').strip()
         bg = (background or DEFAULT_BACKGROUND).strip()
-        prob = (problem or DEFAULT_PROBLEM).strip()
         feature_sig = ', '.join([f"{name}: np.ndarray" for name in feats])
         feature_doc = ', '.join(feats)
         idx_c = min(3, n_features)
@@ -302,7 +299,6 @@ def equation({FEATURE_SIG}, params: np.ndarray) -> np.ndarray:
         terms.append(f"params[{idx_c}]")
         linear_seed = ' + '.join(terms)
         return SPEC_TEMPLATE_NUMPY.format(
-            PROBLEM=prob,
             BACKGROUND=bg,
             FEATURE_SIG=feature_sig,
             FEATURE_DOC=feature_doc,

@@ -34,7 +34,7 @@ analysis_conversation_template = (
 analysis_question_good = (
     "The optimized function skeleton you just answered scored higher. Please summarize useful experience.\n"
     "STRICTLY follow these rules:\n"
-    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent} in {problem}, I can ...\"\n"
+    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent}, I can ...\"\n"
     "2. Summarize ONLY the key success factors\n"
     "3. You need to make your answer as concise as possible\n"
 )
@@ -42,7 +42,7 @@ analysis_question_good = (
 analysis_question_bad = (
     "The optimized function skeleton you just answered scored lower. What lessons can you draw from it?\n"
     "STRICTLY follow these rules: \n"
-    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent} in {problem}, I can ...\"\n"
+    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent}, I can ...\"\n"
     "2. Identify ONE crucial improvement point\n"
     "3. You need to make your answer as concise as possible\n"
 )
@@ -51,7 +51,7 @@ analysis_question_none = (
     "The optimized function skeleton you just answered failed with error: {error}. What lessons can you draw from it?\n"
     "{budget_sentence}"
     "STRICTLY follow these rules:\n"
-    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent} in {problem}, I need ...\"\n"
+    "1. Use the exact phrasing \"when seeking for the mathematical function skeleton that represents {dependent}, I need ...\"\n"
     "2. Address the SPECIFIC error: {error}\n"
     "3. Treat this failed sample as a negative example to avoid, not as a target requirement to satisfy\n"
     "4. Identify ONE concrete change that would prevent the next sample from repeating this failure\n"
@@ -63,13 +63,15 @@ ideas_block_title = "\n\n### The following are ideas summarized based on past ex
 idea_item_prefix = "idea{index}：\n"
 
 # 残差分析注入区块标题
-residual_block_title = ("\n\n### The following is the analysis result of the existing data on {problem}, "
-                        "which will assist you in answering the question. ###\n\n")
+residual_block_title = (
+    "\n\n### The following is the analysis result of the existing data, "
+    "which will assist you in answering the question. ###\n\n"
+)
 
 
 # 采样阶段：任务头（追加在发送前）
 head_template = (
-    "Find the mathematical function skeleton that represents {dependent} in {problem}, "
+    "Find the mathematical function skeleton that represents {dependent}, "
     "given data on {independent}. \n"
 )
 
@@ -182,7 +184,8 @@ class PromptContext:
 
     @property
     def problem(self):
-        return self.problem_name or problem_name_in_prompt
+        # 匿名实验中不向模型暴露 problem_name。
+        return problem_name_in_prompt
 
     @property
     def background_text(self):
