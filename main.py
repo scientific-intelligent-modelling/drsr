@@ -182,6 +182,12 @@ if __name__ == '__main__':
             client = llm_mod.DeepSeekClient(api_key=api_key, model=pure_model)
         elif provider in ('siliconflow', 'sliconflow'):
             client = llm_mod.SiliconflowClient(api_key=api_key, model=pure_model)
+        elif provider in ('deepinfra', 'deep-infra'):
+            client = llm_mod.DeepInfraClient(
+                api_key=api_key,
+                model=pure_model,
+                base_url=llm_config.get('base_url') or 'https://api.deepinfra.com/v1/openai',
+            )
         elif provider in ('ollama', 'local'):
             client = llm_mod.OllamaClient(api_key=api_key, model=pure_model)
         elif provider in ('cstcloud', 'cst', 'cst-cloud', 'keji', 'keji-yun'):
