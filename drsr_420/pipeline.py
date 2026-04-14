@@ -75,6 +75,7 @@ def main(
     profiler = profile.Profiler(
         results_root,
         samples_per_iteration=config.samples_per_prompt,
+        persist_all_samples=bool(kwargs.get('persist_all_samples', False)),
     ) if results_root else None
 
     seed = kwargs.get('seed', None)

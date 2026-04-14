@@ -21,6 +21,7 @@ class Profiler:
         pkl_dir: str | None = None,
         max_log_nums: int | None = None,
         samples_per_iteration: int | None = None,
+        persist_all_samples: bool = False,
     ):
         """
         Args:
@@ -55,6 +56,7 @@ class Profiler:
         self._samples_per_iteration: int | None = (
             int(samples_per_iteration) if samples_per_iteration and samples_per_iteration > 0 else None
         )
+        self._persist_all_samples = bool(persist_all_samples)
         self._progress_records: list[dict] = []
         self._global_best_score = None
         self._global_best_sample_order = None
@@ -118,7 +120,13 @@ class Profiler:
             self._all_sampled_functions[sample_orders] = programs
             self._record_and_verbose(sample_orders)
             self._write_tensorboard()
-            self._write_json(programs)
+            if self._persist_all_samples:
+                self._write_json(programs)
+            else:
+                try:
+                    self._prune_samples_dir_topk()
+                except Exception:
+                    pass
             # 在写入 samples 之后，更新进度与历史最优记录
             try:
                 self._update_progress_and_history(programs)
