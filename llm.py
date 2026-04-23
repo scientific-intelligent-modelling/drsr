@@ -56,7 +56,7 @@ class LLMClient:
             'max_tokens': 1024,  # 更安全的默认值，避免超过部分模型上限
             'temperature': 0.6,
             'top_p': 0.3,
-            'top_k': 50,
+            'top_k': 30,
             'frequency_penalty': 0.5,
             'n': 1,
             'stream': False,
@@ -103,7 +103,7 @@ class LLMClient:
         }
         # 仅透传 OpenAI Chat Completions 兼容字段，避免提供商拒绝未知参数
         allowed_keys = {
-            'max_tokens', 'temperature', 'top_p', 'n', 'stream',
+            'max_tokens', 'temperature', 'top_p', 'top_k', 'n', 'stream',
             'presence_penalty', 'frequency_penalty', 'stop', 'logprobs',
         }
         if isinstance(self.kwargs, dict):

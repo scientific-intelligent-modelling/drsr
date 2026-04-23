@@ -144,7 +144,8 @@ if __name__ == '__main__':
                     'model': 'CSTCloud/gpt-oss-120b',
                     'max_tokens': 1024,
                     'temperature': 0.6,
-                    'top_p': 0.3
+                    'top_p': 0.3,
+                    'top_k': 30
                 }, f, ensure_ascii=False, indent=2)
             print(f"[INFO] Generated default LLM config at {args.llm_config}")
         except Exception as e:
@@ -200,6 +201,7 @@ if __name__ == '__main__':
             'max_tokens': int(llm_config.get('max_tokens', 1024) or 1024),
             'temperature': float(llm_config.get('temperature', 0.6) or 0.6),
             'top_p': float(llm_config.get('top_p', 0.3) or 0.3),
+            'top_k': int(llm_config.get('top_k', 30) or 30),
         })
         print(f"[INFO] LLM client initialized: provider={provider}, model={pure_model}")
     except Exception as e:
