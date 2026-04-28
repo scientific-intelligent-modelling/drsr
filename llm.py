@@ -309,26 +309,34 @@ class ClientFactory:
         else:
             api_key = None
 
+        def _require_api_key(value: str, env_name: str) -> str:
+            resolved = value or os.getenv(env_name, '')
+            if not isinstance(resolved, str) or not resolved.strip():
+                raise ValueError(
+                    f"LLM provider '{provider}' 缺少 API key："
+                    f"请在 llm.config 的 api_key 字段或环境变量 {env_name} 中配置。"
+                )
+            return resolved
 
         # 设置默认 base_url
         if provider == 'deepseek':
             base_url = base_url or "https://api.deepseek.com"
-            return DeepSeekClient(api_key=api_key or os.getenv('DEEPSEEK_API_KEY', ''), model=model, base_url=base_url)
+            return DeepSeekClient(api_key=_require_api_key(api_key, 'DEEPSEEK_API_KEY'), model=model, base_url=base_url)
         elif provider in ('siliconflow', 'silicon-flow', 'sflow'):
             base_url = base_url or "https://api.siliconflow.cn/v1"
-            return SiliconflowClient(api_key=api_key or os.getenv('SILICONFLOW_API_KEY', ''), model=model, base_url=base_url)
+            return SiliconflowClient(api_key=_require_api_key(api_key, 'SILICONFLOW_API_KEY'), model=model, base_url=base_url)
         elif provider in ('deepinfra', 'deep-infra'):
             base_url = base_url or "https://api.deepinfra.com/v1/openai"
-            return DeepInfraClient(api_key=api_key or os.getenv('DEEPINFRA_API_KEY', ''), model=model, base_url=base_url)
+            return DeepInfraClient(api_key=_require_api_key(api_key, 'DEEPINFRA_API_KEY'), model=model, base_url=base_url)
         elif provider == 'ollama':
             base_url = base_url or "http://localhost:11111/v1"
             return OllamaClient(api_key=api_key or '', model=model, base_url=base_url)
         elif provider in ('blt', 'bltcy', 'plato'):
             # 优先使用传入 api_key，否则读环境变量 BLT_API_KEY
-            return BltClient(api_key=api_key or os.getenv('BLT_API_KEY', ''), model=model, base_url=base_url or os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1'))
+            return BltClient(api_key=_require_api_key(api_key, 'BLT_API_KEY'), model=model, base_url=base_url or os.getenv('BLT_API_BASE', 'https://api.bltcy.ai/v1'))
         elif provider in ('cstcloud', 'cst', 'cst-cloud', 'keji', 'keji-yun'):
             # 科技云：默认基址 https://uni-api.cstcloud.cn/v1
-            return CSTCloudClient(api_key=api_key or os.getenv('CSTCLOUD_API_KEY', ''), model=model, base_url=base_url or 'https://uni-api.cstcloud.cn/v1')
+            return CSTCloudClient(api_key=_require_api_key(api_key, 'CSTCLOUD_API_KEY'), model=model, base_url=base_url or 'https://uni-api.cstcloud.cn/v1')
         else:
             raise ValueError(f"不支持的提供商: {provider}，请使用 'deepseek'、'siliconflow'、'deepinfra'、'blt'、'cstcloud' 或 'ollama'")
         
