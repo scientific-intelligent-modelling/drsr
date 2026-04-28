@@ -57,6 +57,7 @@ def _trim_function_body(generated_code: str) -> str:
     if not generated_code:
         return ''
 
+    generated_code = code_manipulation.sanitize_code_text(generated_code)
     code = f'def fake_function_header():\n{generated_code}'
 
     tree = None
@@ -213,6 +214,7 @@ class LocalSandbox(Sandbox):
 
     def _print_evaluation_details(self, program, results, **kwargs):
         print('================= Evaluated Program =================')
+        program = code_manipulation.sanitize_code_text(program)
         function = code_manipulation.text_to_program(program).get_function(kwargs.get('func_to_evolve', 'equation'))
         print(f'{str(function).strip()}\n-----------------------------------------------------')
         print(f'Score: {results}\n=====================================================\n\n')
@@ -222,6 +224,7 @@ class LocalSandbox(Sandbox):
     def _compile_and_run_function(self, program, function_to_run, function_to_evolve, 
                                   dataset, numba_accelerate, result_queue):
         try:
+            program = code_manipulation.sanitize_code_text(program)
             # optimize the code (decorate function_to_run with @numba.jit())
             if numba_accelerate:
                 program = evaluator_accelerate.add_numba_decorator(

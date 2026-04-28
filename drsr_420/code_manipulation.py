@@ -32,6 +32,13 @@ import tokenize
 import logging
 
 
+def sanitize_code_text(text: str) -> str:
+    """清理 LLM 输出中会让 Python parser 直接崩溃的控制字符。"""
+    if not isinstance(text, str):
+        return text
+    return text.replace('\x00', '')
+
+
 @dataclasses.dataclass
 class Function:
     "" "A parsed Python function. """
@@ -60,6 +67,8 @@ class Function:
         return function
 
     def __setattr__(self, name: str, value: str) -> None:
+        if isinstance(value, str):
+            value = sanitize_code_text(value)
         if name == 'body':
             value = value.strip('\n')
 
@@ -162,6 +171,7 @@ class ProgramVisitor(ast.NodeVisitor):
 def text_to_program(text: str) -> Program:
     """ Return Program object by parsing input text using Python AST. """
     try:
+        text = sanitize_code_text(text)
         # Program is composed of some preface (e.g. imports,
         # classes, assignments, ...) followed by a sequence of functions.
         tree = ast.parse(text)
@@ -187,6 +197,7 @@ def text_to_function(text: str) -> Function:
 
 def _tokenize(code: str) -> Iterator[tokenize.TokenInfo]:
     """Transform `code` into Python tokens."""
+    code = sanitize_code_text(code)
     code_bytes = code.encode()
     code_io = io.BytesIO(code_bytes)
     
@@ -261,6 +272,7 @@ def get_functions_called(code: str) -> MutableSet[str]:
 
 def yield_decorated(code: str, module: str, name: str) -> Iterator[str]:
     """Yield names of functions decorated with `@module.name` in `code`. """
+    code = sanitize_code_text(code)
     tree = ast.parse(code)
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef):
