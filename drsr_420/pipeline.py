@@ -19,6 +19,7 @@ from __future__ import annotations
 # from collections.abc import Sequence
 from typing import Any, Tuple, Sequence
 import os
+import numpy as np
 
 from drsr_420 import code_manipulation
 from drsr_420 import config as config_lib
@@ -71,10 +72,21 @@ def main(
     results_root = kwargs.get('results_root', None) or config.results_root
     llm_config = kwargs.get('llm_config', None)
     llm_client = kwargs.get('llm_client', None)
+    target_variance = None
+    try:
+        if hasattr(inputs, 'values'):
+            any_dataset = next(iter(inputs.values()))
+            if isinstance(any_dataset, dict) and 'outputs' in any_dataset:
+                y = np.asarray(any_dataset['outputs'])
+                if y.size > 0:
+                    target_variance = float(np.var(y))
+    except Exception:
+        target_variance = None
     # Profiler：记录样本与中间结果（包括 Top-K、历史最优与逐 iteration 进度）
     profiler = profile.Profiler(
         results_root,
         samples_per_iteration=config.samples_per_prompt,
+        target_variance=target_variance,
         persist_all_samples=bool(kwargs.get('persist_all_samples', False)),
     ) if results_root else None
 

@@ -13,6 +13,11 @@ import json
 from drsr_420 import code_manipulation
 # 移除对 TensorBoard 的依赖，避免安装额外包
 
+try:
+    from scientific_intelligent_modelling.srkit import llm as llm_stats
+except Exception:  # pragma: no cover - standalone drsr fallback
+    import llm as llm_stats
+
 
 class Profiler:
     def __init__(
@@ -21,6 +26,7 @@ class Profiler:
         pkl_dir: str | None = None,
         max_log_nums: int | None = None,
         samples_per_iteration: int | None = None,
+        target_variance: float | None = None,
         persist_all_samples: bool = False,
     ):
         """
@@ -56,9 +62,12 @@ class Profiler:
         self._samples_per_iteration: int | None = (
             int(samples_per_iteration) if samples_per_iteration and samples_per_iteration > 0 else None
         )
+        self._target_variance = float(target_variance) if target_variance and target_variance > 0 else None
         self._persist_all_samples = bool(persist_all_samples)
         self._progress_records: list[dict] = []
         self._global_best_score = None
+        self._global_best_mse = None
+        self._global_best_nmse = None
         self._global_best_sample_order = None
 
         # 不再创建 TensorBoard 写入器
@@ -82,10 +91,15 @@ class Profiler:
         iteration = self._compute_iteration(int(sample_order))
         function_str = str(programs)
 
-        # 字段顺序：iteration -> sample_order -> score -> function -> params
+        mse = self._score_to_mse(score)
+        nmse = self._mse_to_nmse(mse)
+
+        # 字段顺序尽量对齐 llmsr：iteration -> sample_order -> nmse/mse -> score -> function -> params
         content = {
             "iteration": iteration,
             "sample_order": int(sample_order),
+            "nmse": nmse,
+            "mse": mse,
             "score": score,
             "function": function_str,
         }
@@ -146,6 +160,31 @@ class Profiler:
         # 按 samples_per_iteration 分组，1-based
         return (sample_order - 1) // self._samples_per_iteration + 1
 
+    def _score_to_mse(self, score: float | None) -> float | None:
+        if not isinstance(score, (int, float)):
+            return None
+        return -float(score)
+
+    def _mse_to_nmse(self, mse: float | None) -> float | None:
+        if mse is None or self._target_variance is None or self._target_variance <= 0:
+            return None
+        return float(mse) / float(self._target_variance)
+
+    def _llm_usage_record(self) -> dict:
+        """返回与 LLMSR progress.json 对齐的大模型累计统计。"""
+        record: dict = {}
+        try:
+            record["llm_tokens"] = llm_stats.get_global_tokens()
+        except Exception:
+            record["llm_tokens"] = {}
+        try:
+            total_time = llm_stats.get_global_time()
+        except Exception:
+            total_time = None
+        if total_time is not None:
+            record["llm_time_seconds"] = round(float(total_time), 2)
+        return record
+
     def _update_progress_and_history(self, programs: code_manipulation.Function):
         """
         更新 progress.json 与 best_history 目录：
@@ -158,6 +197,8 @@ class Profiler:
             return
 
         iteration = self._compute_iteration(sample_order)
+        mse = self._score_to_mse(score)
+        nmse = self._mse_to_nmse(mse)
 
         # 1. 若是全局最优被刷新，则追加一条历史最优样本
         is_new_global_best = (
@@ -165,6 +206,8 @@ class Profiler:
         )
         if is_new_global_best:
             self._global_best_score = float(score)
+            self._global_best_mse = mse
+            self._global_best_nmse = nmse
             self._global_best_sample_order = int(sample_order)
 
             # 写入 best_history/best_sample_<sample_order>.json
@@ -172,6 +215,8 @@ class Profiler:
             content = {
                 "iteration": iteration,
                 "sample_order": self._global_best_sample_order,
+                "nmse": self._global_best_nmse,
+                "mse": self._global_best_mse,
                 "score": self._global_best_score,
                 "function": function_str,
             }
@@ -199,16 +244,22 @@ class Profiler:
             self._progress_records.append(
                 {
                     "iteration": next_iter,
+                    "best_nmse": self._global_best_nmse,
+                    "best_mse": self._global_best_mse,
+                    # 保留旧字段，兼容现有 DRSR 分析/恢复脚本。
                     "best_score": self._global_best_score,
                     "best_sample_order": self._global_best_sample_order,
                 }
             )
 
         # 当前 iteration 的记录更新为最新的全局最优
+        self._progress_records[iteration - 1]["best_nmse"] = self._global_best_nmse
+        self._progress_records[iteration - 1]["best_mse"] = self._global_best_mse
         self._progress_records[iteration - 1]["best_score"] = self._global_best_score
         self._progress_records[iteration - 1]["best_sample_order"] = (
             self._global_best_sample_order
         )
+        self._progress_records[iteration - 1].update(self._llm_usage_record())
 
         try:
             with open(self._progress_path, "w", encoding="utf-8") as f:
@@ -223,11 +274,15 @@ class Profiler:
         sample_time = function.sample_time
         evaluate_time = function.evaluate_time
         score = function.score
+        mse = self._score_to_mse(score)
+        nmse = self._mse_to_nmse(mse)
         # log attributes of the function
         print(f'================= Evaluated Function =================')
         print(f'{function_str}')
         print(f'------------------------------------------------------')
         print(f'Score        : {str(score)}')
+        print(f'MSE          : {str(mse)}')
+        print(f'NMSE         : {str(nmse)}')
         print(f'Sample time  : {str(sample_time)}')
         print(f'Evaluate time: {str(evaluate_time)}')
         print(f'Sample orders: {str(sample_orders)}')
@@ -293,12 +348,16 @@ class Profiler:
             function_str = str(func)
 
             iteration = self._compute_iteration(int(sample_order))
+            mse = self._score_to_mse(score)
+            nmse = self._mse_to_nmse(mse)
 
             # 按用户需求的字段顺序组织内容：
-            # iteration -> sample_order -> score -> function -> params
+            # iteration -> sample_order -> nmse/mse -> score -> function -> params
             content = {
                 "iteration": iteration,
                 "sample_order": sample_order,
+                "nmse": nmse,
+                "mse": mse,
                 "score": score,
                 "function": function_str,
             }
